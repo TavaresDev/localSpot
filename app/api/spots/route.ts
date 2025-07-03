@@ -44,14 +44,15 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
   const params = spotQuerySchema.parse(Object.fromEntries(searchParams));
   
-  const currentUser = await validateSession();
+  // Try to get current user but don't require authentication
+  const currentUser = await validateSession().catch(() => null);
 
   // Build all conditions first
   const conditions = [];
 
   // Visibility filter
   if (params.visibility) {
-    if (params.visibility === "private") {
+    if (params.visibility === "private" && currentUser) {
       conditions.push(
         and(
           eq(spots.visibility, "private"),
@@ -62,22 +63,33 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       conditions.push(eq(spots.visibility, params.visibility));
     }
   } else {
-    // Default: show public spots OR user's own spots
+    if (currentUser) {
+      // Authenticated: show public spots OR user's own spots
+      conditions.push(
+        or(
+          eq(spots.visibility, "public"),
+          eq(spots.userId, currentUser.id)
+        )
+      );
+    } else {
+      // Unauthenticated: only show public spots
+      conditions.push(eq(spots.visibility, "public"));
+    }
+  }
+
+  // Status filter
+  if (currentUser) {
+    // Authenticated: show approved spots OR user's own spots
     conditions.push(
       or(
-        eq(spots.visibility, "public"),
+        eq(spots.status, "approved"),
         eq(spots.userId, currentUser.id)
       )
     );
+  } else {
+    // Unauthenticated: only show approved spots
+    conditions.push(eq(spots.status, "approved"));
   }
-
-  // Status filter (only approved spots unless it's the user's own spots)
-  conditions.push(
-    or(
-      eq(spots.status, "approved"),
-      eq(spots.userId, currentUser.id)
-    )
-  );
 
   // Apply additional filters
   if (params.type) {
