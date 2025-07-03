@@ -6,6 +6,7 @@ import {
   Banknote,
   HomeIcon,
   LucideIcon,
+  MapPin,
   MessageCircleIcon,
   Settings,
   Upload,
@@ -24,6 +25,11 @@ const navItems: NavItem[] = [
     label: "Overview",
     href: "/dashboard",
     icon: HomeIcon,
+  },
+  {
+    label: "Spots",
+    href: "/dashboard/spots",
+    icon: MapPin,
   },
   {
     label: "Chat",
