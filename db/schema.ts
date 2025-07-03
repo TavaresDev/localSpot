@@ -4,7 +4,12 @@ import {
   pgTable,
   text,
   timestamp,
+  decimal,
+  jsonb,
+  date,
+  inet,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 // Better Auth Tables
 export const user = pgTable("user", {
@@ -13,6 +18,7 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("emailVerified").notNull().default(false),
   image: text("image"),
+  role: text("role").notNull().default("user"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
@@ -82,4 +88,72 @@ export const subscription = pgTable("subscription", {
   metadata: text("metadata"), // JSON string
   customFieldData: text("customFieldData"), // JSON string
   userId: text("userId").references(() => user.id),
+});
+
+// SpotMap Longboarding Tables
+export const spots = pgTable("spots", {
+  id: text("id").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  locationLat: decimal("locationLat", { precision: 10, scale: 8 }).notNull(),
+  locationLng: decimal("locationLng", { precision: 11, scale: 8 }).notNull(),
+  visibility: text("visibility").notNull().default("public"),
+  spotType: text("spotType").notNull(),
+  difficulty: text("difficulty").notNull(),
+  startLat: decimal("startLat", { precision: 10, scale: 8 }),
+  startLng: decimal("startLng", { precision: 11, scale: 8 }),
+  endLat: decimal("endLat", { precision: 10, scale: 8 }),
+  endLng: decimal("endLng", { precision: 11, scale: 8 }),
+  bestTimes: text("bestTimes"),
+  safetyNotes: text("safetyNotes"),
+  rules: text("rules"),
+  photos: jsonb("photos").default([]),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+export const events = pgTable("events", {
+  id: text("id").primaryKey(),
+  spotId: text("spotId")
+    .notNull()
+    .references(() => spots.id, { onDelete: "cascade" }),
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  startTime: timestamp("startTime").notNull(),
+  endTime: timestamp("endTime").notNull(),
+  isRecurring: boolean("isRecurring").notNull().default(false),
+  recurrenceData: jsonb("recurrenceData"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+export const collections = pgTable("collections", {
+  id: text("id").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  spotIds: jsonb("spotIds").notNull().default([]),
+  isPublic: boolean("isPublic").notNull().default(false),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+export const moderationQueue = pgTable("moderationQueue", {
+  id: text("id").primaryKey(),
+  contentType: text("contentType").notNull(),
+  contentId: text("contentId").notNull(),
+  status: text("status").notNull().default("pending"),
+  moderatorId: text("moderatorId").references(() => user.id),
+  reviewedAt: timestamp("reviewedAt"),
+  feedback: text("feedback"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
