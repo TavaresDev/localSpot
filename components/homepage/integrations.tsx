@@ -1,77 +1,63 @@
-import {
-  Shadcnui,
-  TailwindCSS,
-  BetterAuth,
-  Polar,
-  NeonPostgres,
-  Nextjs,
-} from "@/components/logos";
 import { Card } from "@/components/ui/card";
+import { Smartphone, MapIcon, Camera, TrendingUp, AlertTriangle, Navigation } from "lucide-react";
 import * as React from "react";
 
-export default function Integrations() {
+export default function Features() {
   return (
-    <section>
-      <div className="pt-12 pb-32">
+    <section className="bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-900 dark:to-gray-900">
+      <div className="pt-16 pb-32">
         <div className="mx-auto max-w-5xl px-6">
-          <div>
+          <div className="text-center">
             <h2 className="text-balance text-3xl font-semibold md:text-4xl">
-              Powered by modern technology
+              Powerful Features for Every Rider
             </h2>
-            <p className="text-muted-foreground mt-3 text-lg">
-              Built on a foundation of proven technologies for reliability,
-              performance, and security.
+            <p className="text-muted-foreground mt-3 text-lg max-w-2xl mx-auto">
+              From GPS navigation to community events, SpotMap gives you all the tools you need for epic longboarding adventures.
             </p>
           </div>
 
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <IntegrationCard
-              title="Next.js"
-              description="The React framework for production with App Router, Server Components, and built-in optimizations."
-              link="https://nextjs.org"
+          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <FeatureCard
+              title="Mobile-First Experience"
+              description="Native mobile interface optimized for on-the-go spot discovery and navigation."
             >
-              <Nextjs />
-            </IntegrationCard>
+              <Smartphone className="size-10 text-blue-600" />
+            </FeatureCard>
 
-            <IntegrationCard
-              title="Better Auth"
-              description="Modern authentication library with session management, OAuth providers, and security features."
-              link="https://better-auth.com"
+            <FeatureCard
+              title="Offline Maps"
+              description="Download spot information for offline access when you're in remote locations."
             >
-              <BetterAuth />
-            </IntegrationCard>
+              <MapIcon className="size-10 text-green-600" />
+            </FeatureCard>
 
-            <IntegrationCard
-              title="Neon Postgres"
-              description="Serverless PostgreSQL database with branching, autoscaling, and modern developer experience."
-              link="https://neon.tech"
+            <FeatureCard
+              title="Photo Sharing"
+              description="Share spot photos and action shots with the community to inspire other riders."
             >
-              <NeonPostgres />
-            </IntegrationCard>
+              <Camera className="size-10 text-purple-600" />
+            </FeatureCard>
 
-            <IntegrationCard
-              title="Polar.sh"
-              description="Developer-first subscription platform with webhooks, customer portal, and usage-based billing."
-              link="https://polar.sh"
+            <FeatureCard
+              title="Difficulty Ratings"
+              description="Clear skill level indicators from beginner-friendly to expert-only spots."
             >
-              <Polar />
-            </IntegrationCard>
+              <TrendingUp className="size-10 text-orange-600" />
+            </FeatureCard>
 
-            <IntegrationCard
-              title="Tailwind CSS"
-              description="Utility-first CSS framework for rapid UI development with consistent design tokens."
-              link="https://tailwindcss.com"
+            <FeatureCard
+              title="Safety Alerts"
+              description="Real-time hazard warnings, traffic updates, and weather conditions."
             >
-              <TailwindCSS />
-            </IntegrationCard>
+              <AlertTriangle className="size-10 text-red-600" />
+            </FeatureCard>
 
-            <IntegrationCard
-              title="shadcn/ui"
-              description="Beautiful, accessible components built with Radix UI primitives and styled with Tailwind CSS."
-              link="https://ui.shadcn.com"
+            <FeatureCard
+              title="Route Planning"
+              description="Plan multi-spot sessions with optimized routes and elevation profiles."
             >
-              <Shadcnui />
-            </IntegrationCard>
+              <Navigation className="size-10 text-yellow-600" />
+            </FeatureCard>
           </div>
         </div>
       </div>
@@ -79,46 +65,29 @@ export default function Integrations() {
   );
 }
 
-const IntegrationCard = ({
+const FeatureCard = ({
   title,
   description,
   children,
-  link,
 }: {
   title: string;
   description: string;
   children: React.ReactNode;
-  link?: string;
 }) => {
-  const CardContent = () => (
-    <div className="relative">
-      <div className="*:size-10">{children}</div>
-
-      <div className="mt-6 space-y-1.5">
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <p className="text-muted-foreground line-clamp-2">{description}</p>
-      </div>
-    </div>
-  );
-
-  if (link) {
-    return (
-      <a
-        href={link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block transition-transform hover:scale-105"
-      >
-        <Card className="p-6 h-full cursor-pointer hover:shadow-lg transition-shadow rounded-md">
-          <CardContent />
-        </Card>
-      </a>
-    );
-  }
-
   return (
-    <Card className="p-6">
-      <CardContent />
+    <Card className="p-6 h-full hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 bg-white dark:bg-card group">
+      <div className="relative">
+        <div className="flex justify-center mb-4">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-300">
+            {children}
+          </div>
+        </div>
+
+        <div className="space-y-3 text-center">
+          <h3 className="text-lg font-semibold">{title}</h3>
+          <p className="text-muted-foreground text-sm line-clamp-3 leading-relaxed">{description}</p>
+        </div>
+      </div>
     </Card>
   );
 };

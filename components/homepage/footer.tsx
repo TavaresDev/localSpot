@@ -2,12 +2,24 @@ import Link from "next/link";
 
 const links = [
   {
-    title: "Documentation",
-    href: "https://context7.dev/docs",
+    title: "Safety Guidelines",
+    href: "/safety",
   },
   {
-    title: "Support",
-    href: "#",
+    title: "Community Rules",
+    href: "/community-guidelines",
+  },
+  {
+    title: "Spot Submission",
+    href: "/spots/create",
+  },
+  {
+    title: "Download App",
+    href: "/download",
+  },
+  {
+    title: "Contact",
+    href: "/contact",
   },
   {
     title: "Privacy",
@@ -21,12 +33,12 @@ const links = [
 
 export default function FooterSection() {
   return (
-    <footer className="bg-background py-12">
+    <footer className="bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-900 dark:to-gray-900 py-12 border-t">
       <div className="mx-auto max-w-5xl px-6">
         <div className="flex flex-wrap justify-between gap-12">
           <div className="order-last flex items-center gap-3 md:order-first">
             <span className="text-muted-foreground block text-center text-sm">
-              © {new Date().getFullYear()} SaaS Platform, All rights reserved
+              © {new Date().getFullYear()} SpotMap, Built by riders for riders
             </span>
           </div>
 

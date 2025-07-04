@@ -1,36 +1,54 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Zap, Shield, TrendingUp } from "lucide-react";
+import { MapPin, Users, Shield, Route, Star, Zap } from "lucide-react";
 
 export default function Benefits() {
   return (
-    <section className="py-16">
+    <section className="py-16 bg-gradient-to-br from-blue-50/50 to-green-50/50 dark:from-blue-950/20 dark:to-green-950/20">
       <div className="mx-auto max-w-5xl px-6">
         <div className="text-center">
           <h2 className="text-balance text-3xl font-semibold md:text-4xl">
-            Built for modern businesses
+            Why Choose SpotMap?
           </h2>
           <p className="text-muted-foreground mt-3 text-lg">
-            Everything you need to grow and scale your business efficiently.
+            Join thousands of riders who trust SpotMap for discovering, sharing, and exploring longboarding spots safely.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
           <BenefitCard
-            icon={<Zap className="size-8 text-blue-600" />}
-            title="Fast & Reliable"
-            description="Built on modern infrastructure with 99.9% uptime guarantee and lightning-fast performance."
+            icon={<MapPin className="size-8 text-blue-600" />}
+            title="GPS-Powered Discovery"
+            description="Find longboarding spots near you with precise GPS coordinates, detailed directions, and real-time location sharing."
           />
           
           <BenefitCard
-            icon={<Shield className="size-8 text-green-600" />}
-            title="Secure by Default"
-            description="Enterprise-grade security with authentication, encryption, and compliance built-in from day one."
+            icon={<Users className="size-8 text-green-600" />}
+            title="Community-Driven Content"
+            description="Access spots shared by local riders, complete with photos, safety notes, and insider tips from the community."
           />
           
           <BenefitCard
-            icon={<TrendingUp className="size-8 text-purple-600" />}
-            title="Scales with You"
-            description="From startup to enterprise, our platform grows with your business needs automatically."
+            icon={<Shield className="size-8 text-orange-600" />}
+            title="Safety First"
+            description="Get essential safety information, difficulty ratings, traffic conditions, and hazard warnings for every spot."
+          />
+          
+          <BenefitCard
+            icon={<Route className="size-8 text-purple-600" />}
+            title="Route Mapping"
+            description="Discover optimal routes, elevation profiles, and turn-by-turn navigation for the perfect longboarding experience."
+          />
+          
+          <BenefitCard
+            icon={<Star className="size-8 text-yellow-600" />}
+            title="Curated Collections"
+            description="Save your favorite spots, create custom lists, and discover curated collections from local riding communities."
+          />
+          
+          <BenefitCard
+            icon={<Zap className="size-8 text-red-600" />}
+            title="Live Events"
+            description="Join group rides, competitions, and community events happening at spots near you."
           />
         </div>
       </div>
@@ -48,9 +66,9 @@ const BenefitCard = ({
   description: string;
 }) => {
   return (
-    <Card className="p-6 text-center hover:shadow-lg transition-shadow">
+    <Card className="p-6 text-center hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 bg-white/70 dark:bg-card/70 backdrop-blur-sm">
       <CardContent className="space-y-4 p-0">
-        <div className="flex justify-center">{icon}</div>
+        <div className="flex justify-center p-3 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 w-fit mx-auto">{icon}</div>
         <h3 className="text-xl font-semibold">{title}</h3>
         <p className="text-muted-foreground text-sm leading-relaxed">
           {description}
