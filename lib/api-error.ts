@@ -79,11 +79,12 @@ export function handleAPIError(error: unknown): NextResponse {
 }
 
 export function withErrorHandling(
-  handler: (request: Request, context?: any) => Promise<NextResponse>
+  // Use a more permissive type that matches Next.js 15 route handlers
+  handler: (...args: any[]) => Promise<NextResponse>
 ) {
-  return async (request: Request, context?: any): Promise<NextResponse> => {
+  return async (...args: any[]): Promise<NextResponse> => {
     try {
-      return await handler(request, context);
+      return await handler(...args);
     } catch (error) {
       return handleAPIError(error);
     }
