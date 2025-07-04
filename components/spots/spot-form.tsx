@@ -1,9 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import {
   Form,
   FormControl,
@@ -25,33 +21,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, MapPin } from "lucide-react";
-import { Spot } from "@/lib/types/spots";
-
-const spotFormSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
-  description: z.string().max(1000).optional(),
-  locationLat: z.number().min(-90).max(90),
-  locationLng: z.number().min(-180).max(180),
-  spotType: z.enum(["hill", "street", "park", "bowl", "vert", "cruising", "distance"]),
-  difficulty: z.enum(["beginner", "intermediate", "advanced", "expert"]),
-  visibility: z.enum(["public", "private", "friends"]),
-  startLat: z.number().min(-90).max(90).optional(),
-  startLng: z.number().min(-180).max(180).optional(),
-  endLat: z.number().min(-90).max(90).optional(),
-  endLng: z.number().min(-180).max(180).optional(),
-  bestTimes: z.string().max(500).optional(),
-  safetyNotes: z.string().max(1000).optional(),
-  rules: z.string().max(1000).optional(),
-});
-
-type SpotFormData = z.infer<typeof spotFormSchema>;
+import { Spot, SPOT_TYPES, SPOT_DIFFICULTIES, SPOT_VISIBILITIES } from "@/lib/types/spots";
+import { useSpotForm, UseSpotFormOptions } from "@/lib/hooks/useSpotForm";
+import { CreateSpotResponse } from "@/lib/services/spotService";
 
 interface SpotFormProps {
   initialData?: Partial<Spot>;
-  onSubmit: (data: SpotFormData) => Promise<void>;
+  onSubmit?: (data: CreateSpotResponse | Spot) => void;
   onCancel?: () => void;
   isEditing?: boolean;
-  isSubmitting?: boolean;
+  fieldConfig?: UseSpotFormOptions["fieldConfig"];
 }
 
 export function SpotForm({ 
@@ -59,65 +38,22 @@ export function SpotForm({
   onSubmit, 
   onCancel, 
   isEditing = false,
-  isSubmitting = false 
+  fieldConfig
 }: SpotFormProps) {
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-
-  const form = useForm<SpotFormData>({
-    resolver: zodResolver(spotFormSchema),
-    defaultValues: {
-      name: initialData?.name || "",
-      description: initialData?.description || "",
-      locationLat: initialData?.locationLat ? parseFloat(initialData.locationLat) : 0,
-      locationLng: initialData?.locationLng ? parseFloat(initialData.locationLng) : 0,
-      spotType: initialData?.spotType || "street",
-      difficulty: initialData?.difficulty || "intermediate",
-      visibility: initialData?.visibility || "public",
-      startLat: initialData?.startLat ? parseFloat(initialData.startLat) : undefined,
-      startLng: initialData?.startLng ? parseFloat(initialData.startLng) : undefined,
-      endLat: initialData?.endLat ? parseFloat(initialData.endLat) : undefined,
-      endLng: initialData?.endLng ? parseFloat(initialData.endLng) : undefined,
-      bestTimes: initialData?.bestTimes || "",
-      safetyNotes: initialData?.safetyNotes || "",
-      rules: initialData?.rules || "",
-    },
+  const {
+    form,
+    isSubmitting,
+    handleSubmit,
+    getCurrentLocation,
+    setCurrentAsStart,
+    setCurrentAsEnd,
+    fieldConfig: config
+  } = useSpotForm({
+    isEditing,
+    initialData,
+    onSuccess: onSubmit,
+    fieldConfig
   });
-
-  const getCurrentLocation = async () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by this browser.");
-      return;
-    }
-
-    setIsLoadingLocation(true);
-    
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        form.setValue("locationLat", position.coords.latitude);
-        form.setValue("locationLng", position.coords.longitude);
-        setIsLoadingLocation(false);
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-        alert("Unable to get your location. Please enter coordinates manually.");
-        setIsLoadingLocation(false);
-      }
-    );
-  };
-
-  const setCurrentAsStart = () => {
-    const lat = form.getValues("locationLat");
-    const lng = form.getValues("locationLng");
-    form.setValue("startLat", lat);
-    form.setValue("startLng", lng);
-  };
-
-  const setCurrentAsEnd = () => {
-    const lat = form.getValues("locationLat");
-    const lng = form.getValues("locationLng");
-    form.setValue("endLat", lat);
-    form.setValue("endLng", lng);
-  };
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -129,7 +65,7 @@ export function SpotForm({
       
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit()} className="space-y-6">
             {/* Basic Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Basic Information</h3>
@@ -180,13 +116,11 @@ export function SpotForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="hill">🏔️ Hill</SelectItem>
-                          <SelectItem value="street">🛣️ Street</SelectItem>
-                          <SelectItem value="park">🏞️ Park</SelectItem>
-                          <SelectItem value="bowl">🥣 Bowl</SelectItem>
-                          <SelectItem value="vert">📐 Vert</SelectItem>
-                          <SelectItem value="cruising">🛴 Cruising</SelectItem>
-                          <SelectItem value="distance">📏 Distance</SelectItem>
+                          {SPOT_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type.charAt(0).toUpperCase() + type.slice(1)}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -207,10 +141,11 @@ export function SpotForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="beginner">🟢 Beginner</SelectItem>
-                          <SelectItem value="intermediate">🟡 Intermediate</SelectItem>
-                          <SelectItem value="advanced">🟠 Advanced</SelectItem>
-                          <SelectItem value="expert">🔴 Expert</SelectItem>
+                          {SPOT_DIFFICULTIES.map((difficulty) => (
+                            <SelectItem key={difficulty} value={difficulty}>
+                              {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -219,51 +154,53 @@ export function SpotForm({
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="visibility"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Visibility</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="public">🌍 Public</SelectItem>
-                        <SelectItem value="friends">👥 Friends Only</SelectItem>
-                        <SelectItem value="private">🔒 Private</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      Who can see this spot
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {config?.showAdvancedFields && (
+                <FormField
+                  control={form.control}
+                  name="visibility"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Visibility</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {SPOT_VISIBILITIES.map((visibility) => (
+                            <SelectItem key={visibility} value={visibility}>
+                              {visibility.charAt(0).toUpperCase() + visibility.slice(1)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Who can see this spot
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
 
             {/* Location */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">Location</h3>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={getCurrentLocation}
-                  disabled={isLoadingLocation}
-                >
-                  {isLoadingLocation ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
+                {config?.showLocationHelpers && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={getCurrentLocation}
+                    disabled={isSubmitting}
+                  >
                     <MapPin className="mr-2 h-4 w-4" />
-                  )}
-                  Use Current Location
-                </Button>
+                    Use Current Location
+                  </Button>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -309,8 +246,9 @@ export function SpotForm({
               </div>
 
               {/* Route Points */}
-              <div className="space-y-3">
-                <h4 className="font-medium">Route Points (Optional)</h4>
+              {config?.showRoutePoints && (
+                <div className="space-y-3">
+                  <h4 className="font-medium">Route Points (Optional)</h4>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -421,7 +359,8 @@ export function SpotForm({
                     </div>
                   </div>
                 </div>
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Additional Information */}
@@ -463,23 +402,25 @@ export function SpotForm({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="rules"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Rules & Guidelines</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Local rules, etiquette, or guidelines..."
-                        className="min-h-[80px]"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {config?.showAdvancedFields && (
+                <FormField
+                  control={form.control}
+                  name="rules"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Rules & Guidelines</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Local rules, etiquette, or guidelines..."
+                          className="min-h-[80px]"
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
 
             {/* Form Actions */}

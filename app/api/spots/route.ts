@@ -24,6 +24,17 @@ const createSpotSchema = z.object({
   safetyNotes: z.string().max(1000).optional(),
   rules: z.string().max(1000).optional(),
   photos: z.array(z.string()).default([]),
+}).refine((data) => {
+  // Enhanced coordinate validation
+  if (data.locationLat === 0 && data.locationLng === 0) {
+    return false;
+  }
+  if (Math.abs(data.locationLat) < 0.001 && Math.abs(data.locationLng) < 0.001) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Invalid coordinates: Please provide realistic GPS coordinates",
 });
 
 const spotQuerySchema = z.object({
