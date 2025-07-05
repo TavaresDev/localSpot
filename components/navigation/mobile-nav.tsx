@@ -86,7 +86,7 @@ export function CreateSpotFAB() {
   return (
     <Link
       href="/spots/create"
-      className="fixed bottom-20 right-4 z-40 bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors lg:bottom-4"
+      className="fixed bottom-40 right-2 z-40 bg-primary text-primary-foreground rounded-full p-4 shadow-lg hover:bg-primary/90 transition-colors lg:bottom-4"
     >
       <Plus className="h-6 w-6" />
       <span className="sr-only">Create new spot</span>
