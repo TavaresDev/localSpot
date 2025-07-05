@@ -1,5 +1,5 @@
 import { uploadImageAssets } from "@/lib/upload-image";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { APIException, withErrorHandling } from "@/lib/api-error";
 
 export const config = {
