@@ -1,28 +1,28 @@
 import { db } from "@/db/drizzle";
 import { account, session, subscription, user, verification } from "@/db/schema";
-import {
-  checkout,
-  polar,
-  portal,
-  usage,
-  webhooks,
-} from "@polar-sh/better-auth";
-import { Polar } from "@polar-sh/sdk";
+// import {
+//   checkout,
+//   polar,
+//   portal,
+//   usage,
+//   webhooks,
+// } from "@polar-sh/better-auth";
+// import { Polar } from "@polar-sh/sdk";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 
 // Utility function to safely parse dates
-function safeParseDate(value: string | Date | null | undefined): Date | null {
-  if (!value) return null;
-  if (value instanceof Date) return value;
-  return new Date(value);
-}
+// function safeParseDate(value: string | Date | null | undefined): Date | null {
+//   if (!value) return null;
+//   if (value instanceof Date) return value;
+//   return new Date(value);
+// }
 
-const polarClient = new Polar({
-  accessToken: process.env.POLAR_ACCESS_TOKEN,
-  server: "sandbox",
-});
+// const polarClient = new Polar({
+//   accessToken: process.env.POLAR_ACCESS_TOKEN,
+//   server: "sandbox",
+// });
 
 export const auth = betterAuth({
   trustedOrigins: [`${process.env.NEXT_PUBLIC_APP_URL}`],
@@ -48,6 +48,8 @@ export const auth = betterAuth({
     },
   },
   plugins: [
+    // Polar.sh subscription plugin commented out - not needed for SpotMap
+    /*
     polar({
       client: polarClient,
       createCustomerOnSignUp: false,
@@ -187,6 +189,7 @@ export const auth = betterAuth({
         }),
       ],
     }),
+    */
     nextCookies(),
   ],
 });
