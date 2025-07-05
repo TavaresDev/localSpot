@@ -82,7 +82,7 @@ export function SimplePlacesSearch() {
       {loading && (
         <Card className="border-blue-200 bg-blue-50">
           <CardContent className="p-4">
-            <p className="text-blue-700">🔍 Searching for "{query}"...</p>
+            <p className="text-blue-700">🔍 Searching for {query}...</p>
           </CardContent>
         </Card>
       )}
@@ -92,7 +92,7 @@ export function SimplePlacesSearch() {
         <Card>
           <CardContent className="p-4">
             <h3 className="font-semibold mb-4 text-green-700">
-              ✅ Found {results.length} results for "{query}"
+              ✅ Found {results.length} results for {query}
             </h3>
             <div className="space-y-3">
               {results.map((business) => (
@@ -162,7 +162,7 @@ export function SimplePlacesSearch() {
         <Card className="border-gray-200 bg-gray-50">
           <CardContent className="p-4 text-center">
             <p className="text-gray-600">
-              🔍 No businesses found for "<strong>{query}</strong>"
+              🔍 No businesses found for <strong>{query}</strong>
             </p>
             <p className="text-sm text-gray-500 mt-1">
               Try a different search term or check your location permissions
