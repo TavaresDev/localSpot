@@ -28,7 +28,7 @@ export function SimplePlacesSearch() {
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4">
-      
+
       {/* Search Input + Button */}
       <Card>
         <CardContent className="p-4">
@@ -45,7 +45,7 @@ export function SimplePlacesSearch() {
                 disabled={loading}
               />
             </div>
-            <Button 
+            <Button
               onClick={handleSearch}
               disabled={loading || !query.trim()}
               className="px-6"
@@ -57,8 +57,8 @@ export function SimplePlacesSearch() {
               )}
             </Button>
             {(results.length > 0 || error) && (
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={handleClear}
                 disabled={loading}
               >
@@ -96,38 +96,37 @@ export function SimplePlacesSearch() {
             </h3>
             <div className="space-y-3">
               {results.map((business) => (
-                <div 
-                  key={business.id} 
+                <div
+                  key={business.id}
                   className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <h4 className="font-medium text-lg">{business.name}</h4>
-                      
+
                       {business.address && (
                         <p className="text-gray-600 mt-1">📍 {business.address}</p>
                       )}
-                      
+
                       <div className="flex items-center gap-4 mt-2 flex-wrap">
                         {business.rating && (
                           <span className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                            ⭐ {business.rating} 
+                            ⭐ {business.rating}
                             {business.ratingCount && ` (${business.ratingCount} reviews)`}
                           </span>
                         )}
-                        
+
                         {business.priceLevel && (
                           <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded">
                             💰 {business.priceLevel.replace('_', ' ')}
                           </span>
                         )}
-                        
+
                         {business.isOpen !== undefined && (
-                          <span className={`text-sm px-2 py-1 rounded ${
-                            business.isOpen 
-                              ? 'bg-green-100 text-green-800' 
+                          <span className={`text-sm px-2 py-1 rounded ${business.isOpen
+                              ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
-                          }`}>
+                            }`}>
                             {business.isOpen ? '🟢 Open' : '🔴 Closed'}
                           </span>
                         )}
@@ -140,9 +139,9 @@ export function SimplePlacesSearch() {
                       </div>
 
                       {business.website && (
-                        <a 
-                          href={business.website} 
-                          target="_blank" 
+                        <a
+                          href={business.website}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-600 hover:text-blue-800 text-sm mt-2 inline-block"
                         >
