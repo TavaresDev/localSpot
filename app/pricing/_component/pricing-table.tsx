@@ -109,21 +109,61 @@ export default function PricingTable({
   };
 
   return (
-    <section className="flex flex-col items-center justify-center px-4 mb-24 w-full">
+    <section className="flex flex-col items-center justify-center px-4 mb-24 w-full bg-gradient-to-br from-accent/5 to-primary/5 py-16">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-medium tracking-tight mb-4">
-          Fake Subscription
+          Join the Longboarding Community
         </h1>
         <p className="text-xl text-muted-foreground">
-          Test out this starter kit using this fake subscription.
+          Choose the plan that fits your riding style and helps support our growing community.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl w-full">
-        {/* Starter Tier */}
-        <Card className="relative h-fit">
+      <div className="grid md:grid-cols-3 gap-8 max-w-6xl w-full">
+        {/* Explorer (Free) Tier */}
+        <Card className="relative h-fit hover:shadow-lg transition-all duration-300">
+          <CardHeader>
+            <CardTitle className="text-2xl">Explorer</CardTitle>
+            <CardDescription>Perfect for discovering new spots</CardDescription>
+            <div className="mt-4">
+              <span className="text-4xl font-bold">$0</span>
+              <span className="text-muted-foreground">/month</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-green-500" />
+              <span>Browse public spots</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-green-500" />
+              <span>Basic GPS navigation</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-green-500" />
+              <span>Community photos</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-green-500" />
+              <span>Safety information</span>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button className="w-full" variant="outline">
+              Get Started Free
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* Rider Tier */}
+        <Card className="relative h-fit border-primary shadow-xl scale-105">
+          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+            <Badge className="bg-gradient-to-r from-primary to-primary/90 text-primary-foreground shadow-lg">
+              Most Popular
+            </Badge>
+          </div>
           {isCurrentPlan(STARTER_TIER) && (
-            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+            <div className="absolute -top-3 right-4">
               <Badge
                 variant="secondary"
                 className="bg-green-100 text-green-800"
@@ -133,29 +173,33 @@ export default function PricingTable({
             </div>
           )}
           <CardHeader>
-            <CardTitle className="text-2xl">Starter</CardTitle>
-            <CardDescription>Perfect for getting started</CardDescription>
+            <CardTitle className="text-2xl">Rider</CardTitle>
+            <CardDescription>For active longboarders</CardDescription>
             <div className="mt-4">
-              <span className="text-4xl font-bold">$10</span>
+              <span className="text-4xl font-bold">$5</span>
               <span className="text-muted-foreground">/month</span>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3">
               <Check className="h-5 w-5 text-green-500" />
-              <span>5 Projects</span>
+              <span>Unlimited spot creation</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="h-5 w-5 text-green-500" />
-              <span>10GB Storage</span>
+              <span>Offline maps</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="h-5 w-5 text-green-500" />
-              <span>1 Team Member</span>
+              <span>Route planning</span>
             </div>
             <div className="flex items-center gap-3">
               <Check className="h-5 w-5 text-green-500" />
-              <span>Email Support</span>
+              <span>Event notifications</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-green-500" />
+              <span>Priority support</span>
             </div>
           </CardContent>
           <CardFooter>
@@ -183,18 +227,57 @@ export default function PricingTable({
               >
                 {isAuthenticated === false
                   ? "Sign In to Get Started"
-                  : "Get Started"}
+                  : "Upgrade to Rider"}
               </Button>
             )}
+          </CardFooter>
+        </Card>
+
+        {/* Community Leader Tier */}
+        <Card className="relative h-fit hover:shadow-lg transition-all duration-300">
+          <CardHeader>
+            <CardTitle className="text-2xl">Community Leader</CardTitle>
+            <CardDescription>For organizers and moderators</CardDescription>
+            <div className="mt-4">
+              <span className="text-4xl font-bold">$15</span>
+              <span className="text-muted-foreground">/month</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-green-500" />
+              <span>Moderation tools</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-green-500" />
+              <span>Event organization</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-green-500" />
+              <span>Analytics dashboard</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-green-500" />
+              <span>Branded collections</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Check className="h-5 w-5 text-green-500" />
+              <span>Community management</span>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button className="w-full" variant="outline">
+              Contact Sales
+            </Button>
           </CardFooter>
         </Card>
       </div>
 
       <div className="mt-12 text-center">
         <p className="text-muted-foreground">
-          Need a custom plan?{" "}
+          Questions about our plans?{" "}
           <span className="text-primary cursor-pointer hover:underline">
-            Contact us
+            Contact our community team
           </span>
         </p>
       </div>
