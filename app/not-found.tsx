@@ -13,10 +13,10 @@ export default function NotFound() {
             Spot Not Found
           </h1>
           <p className="text-xl text-muted-foreground mb-2">
-            This longboarding spot doesn't exist in our map yet.
+            This longboarding spot does not exist in our map yet.
           </p>
           <p className="text-muted-foreground">
-            The page you're looking for might have been moved, deleted, or never existed.
+            The page you are looking for might have been moved, deleted, or never existed.
           </p>
         </div>
 
@@ -35,21 +35,21 @@ export default function NotFound() {
               Explore Map
             </Link>
           </Button>
-          
+
           <Button asChild variant="outline" size="lg" className="gap-2">
             <Link href="/spots">
               <Search className="size-4" />
               Browse Spots
             </Link>
           </Button>
-          
+
           <Button asChild variant="outline" size="lg" className="gap-2">
             <Link href="/spots/create">
               <Plus className="size-4" />
               Add New Spot
             </Link>
           </Button>
-          
+
           <Button asChild variant="ghost" size="lg" className="gap-2">
             <Link href="/">
               <Home className="size-4" />
