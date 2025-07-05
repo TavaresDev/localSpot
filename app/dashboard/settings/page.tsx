@@ -71,7 +71,7 @@ function SettingsContent() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  const { data: organizations } = authClient.useListOrganizations();
+  // Organizations feature removed - not needed for SpotMap
 
   // Handle URL tab parameter
   useEffect(() => {
@@ -124,7 +124,7 @@ function SettingsContent() {
     };
 
     fetchData();
-  }, [organizations]);
+  }, []);
 
   const handleTabChange = (value: string) => {
     setCurrentTab(value);
