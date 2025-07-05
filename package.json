@@ -1,6 +1,8 @@
 {
-  "name": "apple-pass",
-  "version": "0.1.0",
+  "name": "spotmap-longboarding",
+  "version": "1.0.0",
+  "description": "SpotMap - Longboarding spots discovery app built with Next.js 15",
+  "author": "Andre Tavares <Vtavares.andre@gmail.com>",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",

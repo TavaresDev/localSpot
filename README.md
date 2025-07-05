@@ -1,50 +1,46 @@
-# Next.js SaaS Starter Kit 2.0
+# SpotMap - Longboarding Spots Discovery App
 
-A comprehensive, production-ready SaaS starter kit built with Next.js 15, featuring authentication, subscriptions, AI integration, and modern UI components.
+A modern web application for discovering, sharing, and managing longboarding spots. Built with Next.js 15 and featuring real-time maps, user authentication, and community-driven content.
 
 ## ✨ Features
+
+### 🗺️ Interactive Maps
+- **Google Maps integration** with real-time location data
+- GPS-based spot discovery and navigation
+- Interactive markers with detailed spot information
+- Location search and geocoding
+
+### 🛹 Spot Management
+- Create and share longboarding spots
+- Detailed spot information (type, difficulty, description)
+- Photo uploads for spots
+- Community ratings and reviews
+- Moderation system for content approval
 
 ### 🔐 Authentication & User Management
 - **Better Auth v1.2.8** - Modern authentication system
 - Google OAuth integration
 - Session management with database persistence
 - User profile management with image uploads
-- Account linking for multiple providers
 
 ### 💳 Subscription & Billing
-- **Polar.sh** integration for subscription management
-- Two-tier pricing: Starter ($99/month) & Professional ($499/month)
+- **Polar.sh** integration for premium features
+- Free tier with basic functionality
+- Premium features for enhanced discovery
 - Real-time webhook processing
-- Customer portal for self-service billing
-- Subscription status tracking (active, canceled, expired)
-- Payment gating with elegant overlays
-
-### 🤖 AI Integration
-- **OpenAI** powered chatbot
-- React Markdown rendering for rich responses
-- Multi-step conversation support
-- Integrated chat widget in dashboard
 
 ### 🎨 Modern UI/UX
 - **Tailwind CSS v4** - Latest utility-first styling
 - **shadcn/ui** components - Accessible, customizable
-- **Radix UI** primitives - Unstyled, accessible components
-- Dark/light theme support with smooth transitions
 - Responsive design with mobile-first approach
-- Loading skeletons and optimistic UI updates
+- Dark/light theme support
+- Progressive Web App (PWA) capabilities
 
 ### 🗄️ Database & Storage
 - **Neon PostgreSQL** - Serverless database
 - **Drizzle ORM** - Type-safe database toolkit
-- **Cloudflare R2** - Scalable file storage with zero egress fees
+- **Cloudflare R2** - Scalable file storage for images
 - Database migrations with Drizzle Kit
-- Drag & drop file uploads with progress tracking
-
-### 📊 Analytics & Monitoring
-- **PostHog** integration for product analytics
-- User behavior tracking
-- Custom event monitoring
-- Error tracking and insights
 
 ## 🚀 Tech Stack
 
@@ -53,35 +49,43 @@ A comprehensive, production-ready SaaS starter kit built with Next.js 15, featur
 - **Styling**: Tailwind CSS v4 + shadcn/ui
 - **Database**: Neon PostgreSQL + Drizzle ORM
 - **Authentication**: Better Auth v1.2.8
+- **Maps**: Google Maps JavaScript API
 - **Payments**: Polar.sh
-- **AI**: OpenAI SDK
 - **Storage**: Cloudflare R2
-- **Analytics**: PostHog
+- **Analytics**: PostHog + Vercel Analytics
 - **Deployment**: Vercel (recommended)
 
 ## 📁 Project Structure
 
 ```
 ├── app/
-│   ├── (auth)/              # Authentication pages
-│   ├── dashboard/           # Protected dashboard area
-│   │   ├── _components/     # Dashboard components
-│   │   ├── chat/           # AI chat interface
-│   │   ├── upload/         # File upload with R2
-│   │   ├── payment/        # Subscription management
-│   │   └── settings/       # User settings & billing
-│   ├── pricing/            # Public pricing page
-│   └── api/                # API routes
+│   ├── (app)/               # Mobile app pages (route group)
+│   │   ├── map/            # Interactive map view
+│   │   ├── spots/          # Spot listing and creation
+│   │   └── layout.tsx      # Mobile-optimized layout
+│   ├── dashboard/          # Admin dashboard
+│   │   ├── spots/          # Spot management
+│   │   ├── settings/       # User settings
+│   │   └── layout.tsx      # Desktop layout
+│   ├── api/                # API routes
+│   │   ├── spots/          # Spot CRUD operations
+│   │   ├── maps/           # Geocoding and maps
+│   │   ├── moderation/     # Content moderation
+│   │   └── collections/    # User collections
+│   └── (auth)/             # Authentication pages
 ├── components/
 │   ├── ui/                 # shadcn/ui components
-│   └── homepage/           # Landing page sections
+│   ├── maps/               # Map components
+│   ├── spots/              # Spot-related components
+│   └── navigation/         # Navigation components
 ├── lib/
-│   ├── auth/              # Authentication config
-│   ├── subscription.ts    # Subscription utilities
-│   └── upload-image.ts    # R2 file upload utilities
+│   ├── hooks/              # Custom React hooks
+│   ├── services/           # Business logic
+│   ├── types/              # TypeScript definitions
+│   └── utils/              # Utility functions
 └── db/
-    ├── schema.ts          # Database schema
-    └── drizzle.ts         # Database connection
+    ├── schema.ts           # Database schema
+    └── drizzle.ts          # Database connection
 ```
 
 ## 🛠️ Quick Start
@@ -89,22 +93,21 @@ A comprehensive, production-ready SaaS starter kit built with Next.js 15, featur
 ### Prerequisites
 - Node.js 18+
 - PostgreSQL database (Neon recommended)
+- Google Maps API key
 - Cloudflare R2 bucket for file storage
-- Polar.sh account for subscriptions
-- OpenAI API key for AI features
-- Google OAuth credentials (optional)
+- Polar.sh account for subscriptions (optional)
 
 ### Installation
 
 1. **Clone the repository**
 ```bash
-git clone <repository-url>
-cd next-starter-2.0
+git clone <your-repository-url>
+cd localspot-nextkit
 ```
 
 2. **Install dependencies**
 ```bash
-npm install
+yarn install
 ```
 
 3. **Environment Setup**
@@ -115,103 +118,98 @@ DATABASE_URL="your-neon-database-url"
 
 # Authentication
 BETTER_AUTH_SECRET="your-secret-key"
+NEXT_PUBLIC_APP_URL="http://localhost:3001"
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
-# Polar.sh
+# Google Maps API
+GOOGLE_PLACES_API_KEY="your-google-places-api-key"
+
+# Polar.sh (optional)
 POLAR_ACCESS_TOKEN="your-polar-access-token"
 POLAR_WEBHOOK_SECRET="your-webhook-secret"
-
-# OpenAI
-OPENAI_API_KEY="your-openai-api-key"
+NEXT_PUBLIC_STARTER_TIER="your-starter-product-id"
+NEXT_PUBLIC_STARTER_SLUG="your-starter-slug"
 
 # Cloudflare R2 Storage
 CLOUDFLARE_ACCOUNT_ID="your-cloudflare-account-id"
 R2_UPLOAD_IMAGE_ACCESS_KEY_ID="your-r2-access-key-id"
 R2_UPLOAD_IMAGE_SECRET_ACCESS_KEY="your-r2-secret-access-key"
 R2_UPLOAD_IMAGE_BUCKET_NAME="your-r2-bucket-name"
-
-# Polar.sh Pricing Tiers
-NEXT_PUBLIC_STARTER_TIER="your-starter-product-id"
-NEXT_PUBLIC_STARTER_SLUG="your-starter-slug"
 ```
 
 4. **Database Setup**
 ```bash
 # Generate and run migrations
-npx drizzle-kit generate
-npx drizzle-kit push
+yarn drizzle-kit generate
+yarn drizzle-kit push
 ```
 
-5. **Cloudflare R2 Setup**
-- Create a Cloudflare account and set up R2 storage
-- Create a bucket for file uploads
-- Generate API tokens with R2 permissions
-- Configure CORS settings for your domain
-
-6. **Polar.sh Setup**
-- Create products for your pricing tiers
-- Set up webhook endpoints for subscription events
-- Configure your pricing structure
-
-7. **Start Development Server**
+5. **Start Development Server**
 ```bash
-npm run dev
+yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see your application.
+Open [http://localhost:3001](http://localhost:3001) to see your application.
 
 ## 🎯 Key Features Explained
 
-### Subscription Management
-- Automatic subscription status checking
-- Payment gating for premium features
-- Integration with Polar.sh customer portal
-- Webhook handling for real-time updates
+### Dual Interface Architecture
+- **Mobile App** (`/(app)`) - Public spot discovery with touch-optimized UI
+- **Desktop Dashboard** (`/dashboard`) - Admin and power user features
+- Shared business logic via hooks and services
 
-### AI Chat Integration
-- Built-in chatbot with OpenAI
-- Markdown rendering for rich responses
-- Conversation history and context
+### Spot Discovery System
+- GPS-based location discovery
+- Google Places integration for business search
+- Advanced filtering by type, difficulty, and features
+- Real-time location updates
 
-### File Upload System
-- **Cloudflare R2 integration** with S3-compatible API
-- **Drag & drop interface** with visual feedback
-- **File validation** - Type checking and size limits
-- **Progress tracking** - Real-time upload progress
-- **Image gallery** - View uploaded files with metadata
-- **Copy URLs** - Easy sharing and integration
+### Content Moderation
+- Queue-based moderation system
+- Admin approval workflow
+- Community reporting features
+- Automated content validation
 
-### Analytics & Tracking
-- PostHog event tracking
-- User behavior monitoring
-- Custom analytics dashboard
+### Collections & Events
+- User-curated spot collections (favorites)
+- Time-based events at spots
+- Recurring event support
+- Event photo sharing
 
-## 🔧 Customization
+## 🔧 Development Commands
 
-### Adding New Features
-1. Create components in `components/`
-2. Add API routes in `app/api/`
-3. Update database schema in `db/schema.ts`
-4. Run `npx drizzle-kit generate` and `npx drizzle-kit push`
+```bash
+# Development
+yarn dev                    # Start development server
+yarn build                  # Build for production
+yarn start                  # Start production server
 
-### Styling
-- Modify `app/globals.css` for global styles
-- Use Tailwind classes for component styling
-- Customize theme in `tailwind.config.ts`
+# Database
+yarn drizzle-kit generate   # Generate migrations
+yarn drizzle-kit push      # Push to database
+yarn drizzle-kit studio    # Open database studio
 
-### Authentication
-- Configure providers in `lib/auth/auth.ts`
-- Add new OAuth providers as needed
-- Customize user profile fields in database schema
+# Code Quality
+yarn lint                  # Run ESLint
+yarn type-check           # Run TypeScript checks
+```
 
-## 📚 Learn More
+## 📚 API Documentation
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Better Auth Documentation](https://better-auth.com)
-- [Polar.sh Documentation](https://docs.polar.sh)
-- [Drizzle ORM Documentation](https://orm.drizzle.team)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+### Spots API
+- `GET /api/spots` - List spots with filtering
+- `POST /api/spots` - Create new spot
+- `GET /api/spots/[id]` - Get specific spot
+- `PUT /api/spots/[id]` - Update spot
+- `DELETE /api/spots/[id]` - Delete spot
+
+### Maps API
+- `POST /api/maps/geocode` - Geocode address
+- `GET /api/maps/geocode` - Reverse geocode coordinates
+
+### Places API
+- `POST /api/places/search` - Search businesses via Google Places
 
 ## 🚀 Deployment
 
@@ -222,8 +220,8 @@ Open [http://localhost:3000](http://localhost:3000) to see your application.
 
 ### Manual Deployment
 ```bash
-npm run build
-npm start
+yarn build
+yarn start
 ```
 
 ## 📄 License
@@ -236,4 +234,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-Built with ❤️ using Next.js and modern web technologies.
+## 🙏 Acknowledgments
+
+This project was built using the [Next.js SaaS Starter Kit](https://github.com/michaelshimeles/nextjs-starter-kit) as a foundation. Special thanks to the original creator for providing a solid starting point with modern web technologies.
+
+Built with ❤️ for the longboarding community.
