@@ -1,18 +1,27 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import { SignInButton } from "@/components/auth/sign-in-button";
+import { useAuth } from "@/lib/hooks/useAuth";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function HeroSection() {
+  const { isAuthenticated, user } = useAuth();
+
   return (
     <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
       <div className="relative z-10 mx-auto w-full max-w-2xl px-6 lg:px-0">
         <div className="relative text-center">
           <p className="text-3xl">🛹</p>
           <h1 className="mx-auto mt-12 max-w-xl text-balance text-5xl font-medium">
-            Discover Longboarding Spots
+            {isAuthenticated && user ? `Welcome back, ${user.name.split(' ')[0]}!` : 'Discover Longboarding Spots'}
           </h1>
           <p className="text-muted-foreground mx-auto mb-6 mt-4 text-balance text-xl">
-            Find your perfect ride with community-driven spot discovery, safety notes, and route mapping. Join thousands of riders exploring the world&apos;s best longboarding locations.
+            {isAuthenticated 
+              ? "Ready to explore new spots or share your favorite rides with the community?"
+              : "Find your perfect ride with community-driven spot discovery, safety notes, and route mapping. Join thousands of riders exploring the world's best longboarding locations."
+            }
           </p>
           <div className="flex flex-col items-center gap-4 *:w-full sm:flex-row sm:justify-center sm:*:w-auto">
             <Button asChild variant="default" size="lg" className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300">
@@ -20,11 +29,23 @@ export default function HeroSection() {
                 <span className="text-nowrap font-semibold">🗺️ Explore Spots</span>
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="border-2 hover:bg-primary/5 transition-all duration-300">
-              <Link href="/dashboard" prefetch={true}>
-                <span className="text-nowrap font-semibold">Dashboard</span>
-              </Link>
-            </Button>
+            
+            {isAuthenticated ? (
+              <Button asChild variant="outline" size="lg" className="border-2 hover:bg-primary/5 transition-all duration-300">
+                <Link href="/dashboard" prefetch={true}>
+                  <span className="text-nowrap font-semibold">Dashboard</span>
+                </Link>
+              </Button>
+            ) : (
+              <SignInButton 
+                variant="outline" 
+                size="lg" 
+                className="border-2 hover:bg-primary/5 transition-all duration-300"
+                returnTo="/dashboard"
+              >
+                <span className="text-nowrap font-semibold">Get Started</span>
+              </SignInButton>
+            )}
           </div>
         </div>
 
