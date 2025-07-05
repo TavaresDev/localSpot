@@ -15,7 +15,7 @@ const searchParamsSchema = z.object({
   }),
   radius: z.number().min(1).max(50000),
   types: z.array(z.string()).optional(),
-  maxResults: z.number().min(1).max(20).optional().default(10),
+  maxResults: z.number().min(1).max(20).optional().default(20),
   query: z.string().optional(),
   minRating: z.number().min(0).max(5).optional(),
   openNow: z.boolean().optional(),
@@ -62,11 +62,12 @@ export async function POST(request: NextRequest) {
     console.log("✅ [API] Validated params:", validatedParams);
 
     // Prepare the Google Places API request
-    const placesApiUrl = "https://places.googleapis.com/v1/places:searchNearby";
+    const placesApiUrl = "https://places.googleapis.com/v1/places:searchText";
     
-    // Build the request payload
+    // Build the request payload for Text Search API
     const requestPayload = {
-      locationRestriction: {
+      textQuery: validatedParams.query || "restaurant", // Use query for text search
+      locationBias: {
         circle: {
           center: {
             latitude: validatedParams.location.lat,
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
       ...(validatedParams.types && validatedParams.types.length > 0 && {
         includedTypes: validatedParams.types,
       }),
-      rankPreference: "POPULARITY",
+      rankPreference: "RELEVANCE",
     };
 
     // Define which fields we want from the API to optimize costs
@@ -155,14 +156,7 @@ export async function POST(request: NextRequest) {
       businesses = businesses.filter(business => business.isOpen === true);
     }
 
-    // If query is provided, filter by name (since we can't use keyword in new API)
-    if (validatedParams.query) {
-      const queryLower = validatedParams.query.toLowerCase();
-      businesses = businesses.filter(business =>
-        business.name.toLowerCase().includes(queryLower) ||
-        business.address?.toLowerCase().includes(queryLower)
-      );
-    }
+    // No need to filter by query since Google Text Search API handles this
 
     const searchResponse: BusinessSearchResponse = {
       businesses,
