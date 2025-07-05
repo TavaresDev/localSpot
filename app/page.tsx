@@ -2,12 +2,12 @@ import FooterSection from "@/components/homepage/footer";
 import HeroSection from "@/components/homepage/hero-section";
 import Benefits from "@/components/homepage/benefits";
 import Features from "@/components/homepage/integrations";
-import { getSubscriptionDetails } from "@/lib/subscription";
-import PricingTable from "./pricing/_component/pricing-table";
+// import { getSubscriptionDetails } from "@/lib/subscription";
+// import PricingTable from "./pricing/_component/pricing-table";
 import { SimplePlacesSearch } from "@/components/simple-places-search";
 
 export default async function Home() {
-  const subscriptionDetails = await getSubscriptionDetails();
+  // const subscriptionDetails = await getSubscriptionDetails();
 
   return (
     <>
@@ -18,7 +18,7 @@ export default async function Home() {
         <SimplePlacesSearch />
       </div>
       <Features />
-      <PricingTable subscriptionDetails={subscriptionDetails} />
+      {/* <PricingTable subscriptionDetails={subscriptionDetails} /> */}
       <FooterSection />
     </>
   );
