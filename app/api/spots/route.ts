@@ -224,12 +224,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     userId: currentUser.id,
     status: initialStatus,
     ...validatedData,
-    locationLat: validatedData.locationLat.toString(),
-    locationLng: validatedData.locationLng.toString(),
-    startLat: validatedData.startLat?.toString(),
-    startLng: validatedData.startLng?.toString(),
-    endLat: validatedData.endLat?.toString(),
-    endLng: validatedData.endLng?.toString(),
+    locationLat: validatedData.locationLat,
+    locationLng: validatedData.locationLng,
+    startLat: validatedData.startLat,
+    startLng: validatedData.startLng,
+    endLat: validatedData.endLat,
+    endLng: validatedData.endLng,
   };
 
   const [createdSpot] = await db
