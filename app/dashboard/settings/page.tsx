@@ -92,30 +92,8 @@ function SettingsContent() {
           setEmail(session.data.user.email || "");
         }
 
-        // Try to fetch orders and customer state with better error handling
-        try {
-          const ordersResponse = await authClient.customer.orders.list({});
-
-          if (ordersResponse.data) {
-            setOrders(ordersResponse.data as unknown as OrdersResponse);
-          } else {
-            console.log("No orders found or customer not created yet");
-            setOrders(null);
-          }
-        } catch (orderError) {
-          console.log(
-            "Orders fetch failed - customer may not exist in Polar yet:",
-            orderError,
-          );
-          setOrders(null);
-        }
-
-        try {
-          const { data: customerState } = await authClient.customer.state();
-          console.log("customerState", customerState);
-        } catch (customerError) {
-          console.log("Customer state fetch failed:", customerError);
-        }
+        // Subscription/billing features disabled - SpotMap is free
+        setOrders(null);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -402,7 +380,7 @@ function SettingsContent() {
                   View your past and upcoming invoices
                 </p>
               </div>
-              <Button
+              {/* <Button
                 variant="outline"
                 onClick={async () => {
                   try {
@@ -416,7 +394,7 @@ function SettingsContent() {
               >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Manage Subscription
-              </Button>
+              </Button> */}
             </div>
             {orders?.result?.items && orders.result.items.length > 0 ? (
               <div className="space-y-4">

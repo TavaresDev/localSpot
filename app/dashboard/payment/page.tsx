@@ -1,3 +1,5 @@
+// Payment page disabled - SpotMap is free
+/*
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -6,34 +8,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getSubscriptionDetails } from "@/lib/subscription";
 import Link from "next/link";
-import ManageSubscription from "./_components/manage-subscription";
 
 export default async function PaymentPage() {
-  const subscriptionDetails = await getSubscriptionDetails();
 
   return (
-    <div>
-      <div className="p-6 space-y-4">
-        <div className="relative min-h-screen">
-          {!subscriptionDetails.hasSubscription ||
-          subscriptionDetails.subscription?.status !== "active" ? (
-            <>
-              <div className="absolute inset-0 z-10 rounded-lg flex items-center justify-center">
-                <div className="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-lg text-center max-w-md">
-                  <h3 className="text-xl font-semibold mb-2">
-                    Subscription Required
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    You need an active subscription to access payment management
-                    features.
-                  </p>
-                  <Link href="/pricing">
-                    <Button>Subscribe Now</Button>
-                  </Link>
-                </div>
-              </div>
+    <div className="p-6 space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment Settings</CardTitle>
+          <CardDescription>
+            SpotMap is currently free for all users
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            SpotMap is a free community platform for sharing longboarding spots. 
+            No payment or subscription required!
+          </p>
+          <div className="mt-4">
+            <Link href="/map">
+              <Button>Explore Spots</Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
               <div className="blur-sm pointer-events-none">
                 <Card>
                   <CardHeader>
@@ -123,4 +123,10 @@ export default async function PaymentPage() {
       </div>
     </div>
   );
+}
+*/
+
+// Temporary simple page while payment features are disabled
+export default function PaymentPage() {
+  return <div>Payment features coming soon</div>;
 }
