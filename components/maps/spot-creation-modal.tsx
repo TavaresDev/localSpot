@@ -1,10 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { SPOT_TYPES, SPOT_DIFFICULTIES, SPOT_VISIBILITIES } from "@/lib/types/spots";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +10,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -32,19 +26,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2, MapPin } from "lucide-react";
-
-const spotCreationSchema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
-  description: z.string().max(1000).optional(),
-  spotType: z.enum(SPOT_TYPES),
-  difficulty: z.enum(SPOT_DIFFICULTIES),
-  visibility: z.enum(SPOT_VISIBILITIES).default("public"),
-  bestTimes: z.string().max(500).optional(),
-  safetyNotes: z.string().max(1000).optional(),
-  rules: z.string().max(1000).optional(),
-});
-
-type SpotCreationForm = z.infer<typeof spotCreationSchema>;
+import { useSpotForm } from "@/lib/hooks/useSpotForm";
+import { SPOT_TYPES, SPOT_DIFFICULTIES } from "@/lib/types/spots";
+import { authClient } from "@/lib/auth-client";
 
 interface SpotCreationModalProps {
   isOpen: boolean;
@@ -59,59 +43,74 @@ export function SpotCreationModal({
   location,
   onSpotCreated,
 }: SpotCreationModalProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm<SpotCreationForm>({
-    resolver: zodResolver(spotCreationSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      spotType: "cruising",
-      difficulty: "intermediate",
-      visibility: "public",
-      bestTimes: "",
-      safetyNotes: "",
-      rules: "",
+  const { data: session } = authClient.useSession();
+  
+  const { 
+    form, 
+    isSubmitting, 
+    error,
+    handleSubmit 
+  } = useSpotForm({
+    initialData: { 
+      locationLat: location.lat, 
+      locationLng: location.lng,
+      visibility: "public" // Default for quick creation
     },
-  });
-
-  const onSubmit = async (data: SpotCreationForm) => {
-    setIsSubmitting(true);
-    
-    try {
-      const response = await fetch("/api/spots", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...data,
-          locationLat: location.lat,
-          locationLng: location.lng,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to create spot");
-      }
-
+    onSuccess: () => {
       onSpotCreated?.();
       onClose();
-      form.reset();
-    } catch (error) {
-      console.error("Failed to create spot:", error);
-      // In a real app, you'd show a toast notification here
-    } finally {
-      setIsSubmitting(false);
+    },
+    onError: (error) => {
+      // Handle authentication errors specifically
+      if (error.includes("Authentication required") || error.includes("UNAUTHORIZED")) {
+        // Could show a login prompt or redirect
+        console.error("User needs to be logged in to create spots");
+      }
+    },
+    fieldConfig: {
+      showRoutePoints: false,        // Hide complex route fields for mobile
+      showAdvancedFields: false,     // Hide rules, visibility for simplicity
+      showLocationHelpers: false,    // Location comes from map click
     }
-  };
+  });
+  
+  // Show login prompt if not authenticated
+  if (!session?.user) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-sm mx-4">
+          <DialogHeader>
+            <DialogTitle>Login Required</DialogTitle>
+            <DialogDescription>
+              You need to be logged in to create spots
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col space-y-3 pt-4">
+            <Button 
+              onClick={() => authClient.signIn.social({ provider: "google" })}
+              className="w-full h-12"
+            >
+              Sign in with Google
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={onClose}
+              className="w-full h-10"
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-sm max-h-[85vh] overflow-y-auto mx-auto">
         <DialogHeader>
-          <DialogTitle>Create New Spot</DialogTitle>
+          <DialogTitle>Quick Spot Creation</DialogTitle>
           <DialogDescription>
             Add a new longboarding spot at this location
           </DialogDescription>
@@ -124,8 +123,15 @@ export function SpotCreationModal({
           </span>
         </div>
 
+        {error && (
+          <div className="bg-red-50 text-red-700 p-3 rounded-md text-sm mb-4">
+            {error}
+          </div>
+        )}
+
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit()} className="space-y-4">
+            {/* Essential Fields Only - Mobile Optimized */}
             <FormField
               control={form.control}
               name="name"
@@ -133,23 +139,9 @@ export function SpotCreationModal({
                 <FormItem>
                   <FormLabel>Spot Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter spot name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describe this spot..." 
-                      className="min-h-[80px]"
+                    <Input 
+                      placeholder="Enter spot name" 
+                      className="h-12 text-base"
                       {...field} 
                     />
                   </FormControl>
@@ -158,7 +150,7 @@ export function SpotCreationModal({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}
                 name="spotType"
@@ -167,17 +159,16 @@ export function SpotCreationModal({
                     <FormLabel>Type</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-12">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="downhill">🏔️ Downhill</SelectItem>
-                        <SelectItem value="freeride">🛣️ Freeride</SelectItem>
-                        <SelectItem value="freestyle">🛴 Freestyle</SelectItem>
-                        <SelectItem value="cruising">🏞️ Cruising</SelectItem>
-                        <SelectItem value="dancing">💃 Dancing</SelectItem>
-                        <SelectItem value="pumping">⚡ Pumping</SelectItem>
+                        {SPOT_TYPES.map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {getSpotTypeDisplay(type)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -193,15 +184,16 @@ export function SpotCreationModal({
                     <FormLabel>Difficulty</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-12">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="beginner">🟢 Beginner</SelectItem>
-                        <SelectItem value="intermediate">🟡 Intermediate</SelectItem>
-                        <SelectItem value="advanced">🟠 Advanced</SelectItem>
-                        <SelectItem value="expert">🔴 Expert</SelectItem>
+                        {SPOT_DIFFICULTIES.map((difficulty) => (
+                          <SelectItem key={difficulty} value={difficulty}>
+                            {getDifficultyDisplay(difficulty)}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -212,39 +204,14 @@ export function SpotCreationModal({
 
             <FormField
               control={form.control}
-              name="visibility"
+              name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Visibility</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="public">🌍 Public</SelectItem>
-                      <SelectItem value="friends">👥 Friends Only</SelectItem>
-                      <SelectItem value="private">🔒 Private</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Who can see this spot
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="bestTimes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Best Times</FormLabel>
+                  <FormLabel>Description (Optional)</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="e.g., Early morning, weekends..." 
+                    <Textarea 
+                      placeholder="Brief description of this spot..." 
+                      className="min-h-[80px] text-base"
                       {...field} 
                     />
                   </FormControl>
@@ -258,11 +225,11 @@ export function SpotCreationModal({
               name="safetyNotes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Safety Notes</FormLabel>
+                  <FormLabel>Safety Notes (Optional)</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Important safety information..."
-                      className="min-h-[60px]"
+                      placeholder="Any safety warnings or important info..."
+                      className="min-h-[60px] text-base"
                       {...field} 
                     />
                   </FormControl>
@@ -271,31 +238,22 @@ export function SpotCreationModal({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="rules"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Rules</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Local rules or guidelines..."
-                      className="min-h-[60px]"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+            <div className="flex flex-col space-y-2 pt-4">
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full h-12 text-lg"
+              >
+                {isSubmitting && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                {isSubmitting ? 'Creating Spot...' : 'Create Spot'}
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Create Spot
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+                className="w-full h-10"
+              >
+                Cancel
               </Button>
             </div>
           </form>
@@ -303,4 +261,27 @@ export function SpotCreationModal({
       </DialogContent>
     </Dialog>
   );
+}
+
+// Helper functions for display formatting
+function getSpotTypeDisplay(type: string): string {
+  const displays: Record<string, string> = {
+    downhill: "🏔️ Downhill",
+    freeride: "🛣️ Freeride", 
+    freestyle: "🛴 Freestyle",
+    cruising: "🏞️ Cruising",
+    dancing: "💃 Dancing",
+    pumping: "⚡ Pumping",
+  };
+  return displays[type] || type;
+}
+
+function getDifficultyDisplay(difficulty: string): string {
+  const displays: Record<string, string> = {
+    beginner: "🟢 Beginner",
+    intermediate: "🟡 Intermediate", 
+    advanced: "🟠 Advanced",
+    expert: "🔴 Expert",
+  };
+  return displays[difficulty] || difficulty;
 }

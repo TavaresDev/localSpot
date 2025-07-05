@@ -10,7 +10,22 @@ export interface SpotApiError {
 
 export class SpotService {
   private static async handleResponse<T>(response: Response): Promise<T> {
-    const data = await response.json();
+    let data;
+    
+    try {
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        // If not JSON, get text for better error messages
+        const text = await response.text();
+        data = { message: `Server returned non-JSON response: ${text.substring(0, 100)}...` };
+      }
+    } catch (error) {
+      // JSON parsing failed
+      data = { message: `Failed to parse server response: ${error instanceof Error ? error.message : 'Unknown error'}` };
+    }
     
     if (!response.ok) {
       throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`);
