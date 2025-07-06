@@ -1,13 +1,15 @@
 "use client";
 
 import { Map, AdvancedMarker, Pin, MapCameraChangedEvent, MapCameraProps } from "@vis.gl/react-google-maps";
-import { SpotWithUser } from "@/lib/types/spots";
+import { SpotWithUser, EventWithSpot } from "@/lib/types/spots";
 import { SpotCreationModal } from "./spot-creation-modal";
 import { useState, useCallback, useEffect } from "react";
 
 interface MapViewProps {
   spots: SpotWithUser[];
+  events?: EventWithSpot[];
   onSpotClick?: (spot: SpotWithUser) => void;
+  onEventClick?: (event: EventWithSpot) => void;
   onMapClick?: (lat: number, lng: number) => void;
   center?: { lat: number; lng: number };
   zoom?: number;
@@ -15,11 +17,14 @@ interface MapViewProps {
   height?: string;
   className?: string;
   userData?: { lat: number; lng: number } | null; // Optional user location for future use
+  showEvents?: boolean; // Toggle event markers visibility
 }
 
 export function MapView({
   spots,
+  events = [],
   onSpotClick,
+  onEventClick,
   onMapClick,
   center = { lat: 37.7749, lng: -122.4194 }, // Default to SF
   zoom = 12,
@@ -27,6 +32,7 @@ export function MapView({
   height = "400px",
   className = "",
   userData, // Optional user location for future use
+  showEvents = true,
 }: MapViewProps) {
   const [showCreationModal, setShowCreationModal] = useState(false);
   const [creationLocation, setCreationLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -80,29 +86,31 @@ export function MapView({
     setCameraProps(event.detail);
   }, []);
 
-  console.log("MapView rendered - userData:", userData, "cameraProps:", cameraProps);
+
+  const mapId = "bfce0e8c4d24a6df6074c4b2"; // Example map ID, replace with your actual map ID
+
   return (
     <>
       <div className={`w-full ${className}`} style={{ height, minHeight: "400px" }}>
         <Map
           {...cameraProps}
           onCameraChanged={handleCameraChange}
-          mapId="DEMO_MAP_ID"
+          mapId={mapId}
           onClick={handleMapClick}
           onDblclick={handleMapDoubleClick}
           gestureHandling="greedy"
           disableDefaultUI={false}
-          styles={[
-            {
-              featureType: "poi",
-              elementType: "labels",
-              stylers: [{ visibility: "off" }],
-            },
-          ]}
+        // styles={[
+        //   {
+        //     featureType: "poi",
+        //     elementType: "labels",
+        //     stylers: [{ visibility: "off" }],
+        //   },
+        // ]}
         >
           {spots.map((spot) => (
             <AdvancedMarker
-              key={spot.id}
+              key={`spot-${spot.id}`}
               position={{
                 lat: parseFloat(spot.locationLat.toString()),
                 lng: parseFloat(spot.locationLng.toString()),
@@ -118,6 +126,29 @@ export function MapView({
               >
                 <div className="text-sm">
                   {getSpotTypeEmoji(spot.spotType)}
+                </div>
+              </Pin>
+            </AdvancedMarker>
+          ))}
+
+          {showEvents && events.map((event) => (
+            <AdvancedMarker
+              key={`event-${event.id}`}
+              position={{
+                lat: parseFloat(event.spot.locationLat.toString()),
+                lng: parseFloat(event.spot.locationLng.toString()),
+              }}
+              onClick={() => onEventClick?.(event)}
+              title={`${event.title} - ${event.spot.name}`}
+            >
+              <Pin
+                background={getEventStatusColor(event)}
+                borderColor="white"
+                glyphColor="white"
+                scale={1.3}
+              >
+                <div className="text-sm">
+                  {getEventStatusEmoji(event)}
                 </div>
               </Pin>
             </AdvancedMarker>
@@ -159,4 +190,52 @@ function getSpotTypeEmoji(spotType: string): string {
     pumping: "⚡",
   };
   return emojiMap[spotType] || "📍";
+}
+
+function getEventStatusColor(event: EventWithSpot): string {
+  const now = new Date();
+  const startTime = new Date(event.startTime);
+  const endTime = new Date(event.endTime);
+
+  // Event is happening now
+  if (now >= startTime && now <= endTime) {
+    return "#22C55E"; // Green - happening now
+  }
+
+  // Event is today
+  if (startTime.toDateString() === now.toDateString()) {
+    return "#3B82F6"; // Blue - today
+  }
+
+  // Event is past
+  if (startTime < now) {
+    return "#6B7280"; // Gray - past
+  }
+
+  // Event is upcoming
+  return "#F59E0B"; // Orange - upcoming
+}
+
+function getEventStatusEmoji(event: EventWithSpot): string {
+  const now = new Date();
+  const startTime = new Date(event.startTime);
+  const endTime = new Date(event.endTime);
+
+  // Event is happening now
+  if (now >= startTime && now <= endTime) {
+    return "🟢"; // Green circle - happening now
+  }
+
+  // Event is today
+  if (startTime.toDateString() === now.toDateString()) {
+    return "📅"; // Calendar - today
+  }
+
+  // Event is past
+  if (startTime < now) {
+    return "⏰"; // Clock - past
+  }
+
+  // Event is upcoming
+  return "🔔"; // Bell - upcoming
 }
