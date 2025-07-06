@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useUserSpots } from "@/lib/hooks/queries";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -22,46 +22,17 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-interface UserSpot {
-  id: string;
-  name: string;
-  spotType: string;
-  difficulty: string;
-  createdAt: string;
-  locationLat: number;
-  locationLng: number;
-}
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, isLoading, signOut } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading, signOut } = useAuth();
   const router = useRouter();
-  const [userSpots, setUserSpots] = useState<UserSpot[]>([]);
-  const [spotsLoading, setSpotsLoading] = useState(true);
-
-  // Fetch user's spots
-  useEffect(() => {
-    const fetchUserSpots = async () => {
-      try {
-        setSpotsLoading(true);
-        const response = await fetch(`/api/spots?userId=${user?.id}&limit=10`);
-        if (response.ok) {
-          const data = await response.json();
-          setUserSpots(data.spots || []);
-        }
-      } catch (error) {
-        console.error("Error fetching user spots:", error);
-      } finally {
-        setSpotsLoading(false);
-      }
-    };
-
-    if (isAuthenticated && user) {
-      fetchUserSpots();
-    }
-  }, [isAuthenticated, user]);
+  
+  // Replace the manual fetch with hook
+  const { data: userSpotsData, isLoading: spotsLoading } = useUserSpots(10);
+  const userSpots = userSpotsData?.spots || [];
 
   // Show sign-in prompt if not authenticated
-  if (!isLoading && !isAuthenticated) {
+  if (!authLoading && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
@@ -94,7 +65,7 @@ export default function ProfilePage() {
     );
   }
 
-  if (isLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-background">
         {/* Header Skeleton */}

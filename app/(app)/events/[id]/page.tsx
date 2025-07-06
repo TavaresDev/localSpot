@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { EventWithSpot, RecurrenceData } from "@/lib/types/spots";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useEvent } from "@/lib/hooks/queries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,35 +32,9 @@ export default function EventDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const [event, setEvent] = useState<EventWithSpot | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (params.id) {
-      fetchEvent(params.id as string);
-    }
-  }, [params.id]);
-
-  const fetchEvent = async (eventId: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const response = await fetch(`/api/events/${eventId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch event");
-      }
-      
-      const data = await response.json();
-      setEvent(data);
-    } catch (error) {
-      console.error("Error fetching event:", error);
-      setError("Failed to load event. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
+  const eventId = params.id as string;
+  const { data: event, isLoading, error } = useEvent(eventId);
 
   // RSVP functionality removed as requested
 
@@ -181,7 +155,7 @@ export default function EventDetailsPage() {
     );
   }
 
-  if (error || !event) {
+  if (error || (!isLoading && !event)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -193,7 +167,7 @@ export default function EventDetailsPage() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              {error || "The event you're looking for doesn't exist or has been removed."}
+              {error?.message || "The event you're looking for doesn't exist or has been removed."}
             </p>
             <Link href="/events">
               <Button>
@@ -205,6 +179,11 @@ export default function EventDetailsPage() {
         </Card>
       </div>
     );
+  }
+
+  // This should never happen due to the error check above, but TypeScript needs assurance
+  if (!event) {
+    return null;
   }
 
   // Additional safety check for incomplete data

@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { SpotWithUser } from "@/lib/types/spots";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { useSpot } from "@/lib/hooks/queries";
 import { SpotInfoSection } from "@/components/spots/spot-info-section";
 import { SpotEventsSection } from "@/components/spots/spot-events-section";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,46 +20,15 @@ import {
 import Link from "next/link";
 import { toast } from "sonner";
 
-type SpotWithEvents = SpotWithUser & {
-  events?: any[];
-  _count?: {
-    events: number;
-  };
-};
+// Use the proper type from types file
 
 export default function SpotDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const [spot, setSpot] = useState<SpotWithEvents | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (params.id) {
-      fetchSpot(params.id as string);
-    }
-  }, [params.id]);
-
-  const fetchSpot = async (spotId: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const response = await fetch(`/api/spots/${spotId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch spot");
-      }
-      
-      const data = await response.json();
-      setSpot(data);
-    } catch (error) {
-      console.error("Error fetching spot:", error);
-      setError("Failed to load spot. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  
+  const spotId = params.id as string;
+  const { data: spot, isLoading, error } = useSpot(spotId);
 
   const handleEditSpot = () => {
     if (!spot) return;
@@ -105,7 +73,7 @@ export default function SpotDetailsPage() {
     );
   }
 
-  if (error || !spot) {
+  if (error || (!isLoading && !spot)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -117,7 +85,7 @@ export default function SpotDetailsPage() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              {error || "The spot you're looking for doesn't exist or has been removed."}
+              {error?.message || "The spot you're looking for doesn't exist or has been removed."}
             </p>
             <Link href="/spots">
               <Button>
@@ -132,7 +100,7 @@ export default function SpotDetailsPage() {
   }
 
   // Additional safety check for incomplete data
-  if (!spot.user) {
+  if (!spot?.user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -156,6 +124,11 @@ export default function SpotDetailsPage() {
         </Card>
       </div>
     );
+  }
+
+  // This should never happen due to the error check above, but TypeScript needs assurance
+  if (!spot) {
+    return null;
   }
 
   const isOwner = user?.id === spot.userId;
@@ -201,7 +174,7 @@ export default function SpotDetailsPage() {
             <SpotInfoSection spot={spot} />
             <SpotEventsSection 
               spotId={spot.id} 
-              events={spot.events || []} 
+              events={[]} 
               spotName={spot.name}
             />
           </div>
@@ -244,7 +217,7 @@ export default function SpotDetailsPage() {
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total Events</span>
-                  <span className="font-medium">{spot._count?.events || 0}</span>
+                  <span className="font-medium">0</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status</span>

@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SpotCard } from "@/components/spots/spot-card";
-import { SpotWithUser } from "@/lib/types/spots";
+import { useSpots } from "@/lib/hooks/queries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -19,40 +19,27 @@ import Link from "next/link";
 
 export default function SpotsPage() {
   const router = useRouter();
-  const [spots, setSpots] = useState<SpotWithUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // State for filters
   const [searchQuery, setSearchQuery] = useState("");
   const [spotType, setSpotType] = useState<string>("all");
   const [difficulty, setDifficulty] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
 
-  // Fetch spots
-  useEffect(() => {
-    async function fetchSpots() {
-      try {
-        setIsLoading(true);
-        
-        const params = new URLSearchParams();
-        if (spotType !== "all") params.append("type", spotType);
-        if (difficulty !== "all") params.append("difficulty", difficulty);
-        if (searchQuery) params.append("search", searchQuery);
-        params.append("sort", sortBy);
-        params.append("limit", "50");
-        
-        const response = await fetch(`/api/spots?${params}`);
-        if (!response.ok) throw new Error("Failed to fetch spots");
-        
-        const data = await response.json();
-        setSpots(data.spots || []);
-      } catch (error) {
-        console.error("Error fetching spots:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  // Single hook call replaces all the fetch logic!
+  const { data, isLoading, error } = useSpots({
+    search: searchQuery || undefined,
+    type: spotType !== "all" ? spotType : undefined,
+    difficulty: difficulty !== "all" ? difficulty : undefined,
+    sort: sortBy as 'newest' | 'oldest' | 'name',
+    limit: 50,
+  });
 
-    fetchSpots();
-  }, [searchQuery, spotType, difficulty, sortBy]);
+  const spots = data?.spots || [];
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -91,13 +78,12 @@ export default function SpotsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="hill">🏔️ Hill</SelectItem>
-                  <SelectItem value="street">🛣️ Street</SelectItem>
-                  <SelectItem value="park">🏞️ Park</SelectItem>
-                  <SelectItem value="bowl">🥣 Bowl</SelectItem>
-                  <SelectItem value="vert">📐 Vert</SelectItem>
-                  <SelectItem value="cruising">🛴 Cruising</SelectItem>
-                  <SelectItem value="distance">📏 Distance</SelectItem>
+                  <SelectItem value="downhill">🏔️ Downhill</SelectItem>
+                  <SelectItem value="freeride">🛣️ Freeride</SelectItem>
+                  <SelectItem value="freestyle">🛴 Freestyle</SelectItem>
+                  <SelectItem value="cruising">🏞️ Cruising</SelectItem>
+                  <SelectItem value="dancing">💃 Dancing</SelectItem>
+                  <SelectItem value="pumping">⚡ Pumping</SelectItem>
                 </SelectContent>
               </Select>
 
