@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD COLUMN "photos" jsonb DEFAULT '[]'::jsonb;

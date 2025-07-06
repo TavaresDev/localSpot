@@ -6,10 +6,7 @@ import {
   timestamp,
   real,
   jsonb,
-  date,
-  inet,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 
 // Better Auth Tables
 export const user = pgTable("user", {
@@ -130,6 +127,7 @@ export const events = pgTable("events", {
   endTime: timestamp("endTime").notNull(),
   isRecurring: boolean("isRecurring").notNull().default(false),
   recurrenceData: jsonb("recurrenceData"),
+  photos: jsonb("photos").default([]),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });
