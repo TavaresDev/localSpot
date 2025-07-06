@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { 
-  BusinessSearchResponse, 
-  GooglePlacesResponse, 
-  GooglePlace, 
-  Business 
+import {
+  BusinessSearchResponse,
+  GooglePlacesResponse,
+  GooglePlace,
+  Business
 } from "@/lib/types/business";
 
 // Validation schema for search parameters
@@ -44,6 +44,7 @@ function transformGooglePlaceToBusiness(place: GooglePlace): Business {
   };
 }
 
+
 export async function POST(request: NextRequest) {
   try {
     // Check if API key is configured
@@ -57,13 +58,13 @@ export async function POST(request: NextRequest) {
 
     // Parse and validate request body
     const body = await request.json();
-    console.log("🔍 [API] Received search request:", body);
+
     const validatedParams = searchParamsSchema.parse(body);
-    console.log("✅ [API] Validated params:", validatedParams);
+
 
     // Prepare the Google Places API request
     const placesApiUrl = "https://places.googleapis.com/v1/places:searchText";
-    
+
     // Build the request payload for Text Search API
     const requestPayload = {
       textQuery: validatedParams.query || "restaurant", // Use query for text search
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
       "places.types",
     ].join(",");
 
-    console.log("📤 [API] Sending to Google Places:", { requestPayload, fieldMask });
+    // console.log("📤 [API] Sending to Google Places:", { requestPayload, fieldMask });
 
     // Make the request to Google Places API
     const response = await fetch(placesApiUrl, {
@@ -123,9 +124,9 @@ export async function POST(request: NextRequest) {
         statusText: response.statusText,
         body: errorText,
       });
-      
+
       return NextResponse.json(
-        { 
+        {
           error: "Failed to fetch places from Google Places API",
           message: response.statusText,
           code: response.status,
@@ -135,15 +136,8 @@ export async function POST(request: NextRequest) {
     }
 
     const placesData: GooglePlacesResponse = await response.json();
-    console.log("📥 [API] Google Places response:", { 
-      placesCount: placesData.places?.length || 0,
-      firstPlace: placesData.places?.[0],
-      fullResponse: placesData 
-    });
-
     // Transform Google Places data to our Business format
     let businesses = placesData.places?.map(transformGooglePlaceToBusiness) || [];
-    console.log("🔄 [API] Transformed businesses:", { count: businesses.length, businesses });
 
     // Apply client-side filters
     if (validatedParams.minRating) {
@@ -164,10 +158,6 @@ export async function POST(request: NextRequest) {
       searchParams: validatedParams,
     };
 
-    console.log("✅ [API] Final response:", { 
-      businessCount: searchResponse.businesses.length,
-      totalResults: searchResponse.totalResults 
-    });
 
     return NextResponse.json(searchResponse);
 
@@ -176,7 +166,7 @@ export async function POST(request: NextRequest) {
 
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: "Invalid request parameters",
           message: error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(", "),
           code: 400,
@@ -186,7 +176,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { 
+      {
         error: "Internal server error",
         message: "An unexpected error occurred while searching for places",
         code: 500,
