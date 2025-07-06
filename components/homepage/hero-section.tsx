@@ -14,7 +14,7 @@ export default function HeroSection() {
     <section className="relative py-20 px-4 bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-blue-950/20 dark:via-background dark:to-green-950/20 overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
-      
+
       <div className="relative mx-auto max-w-4xl text-center">
         <div className="mb-8">
           {/* Product badge */}
@@ -22,19 +22,23 @@ export default function HeroSection() {
             <MapPin className="w-3 h-3 mr-1" />
             The longboarding community platform
           </Badge>
-          
+
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 via-blue-800 to-green-800 bg-clip-text text-transparent dark:from-white dark:via-blue-200 dark:to-green-200">
-            {isAuthenticated && user 
-              ? `Welcome back, ${user.name.split(' ')[0]}!` 
-              : 'Find Your Perfect Ride'
+            {isAuthenticated && user
+              ? `Welcome back, ${user.name.split(' ')[0]}!`
+              : 'Find Your Perfect Spot'
             }
           </h1>
-          
+
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            {isAuthenticated 
+            {isAuthenticated
               ? "Ready to discover new spots and share your adventures with the community?"
-              : "Discover pump tracks, downhill routes, and hidden gems shared by riders worldwide. Join the community and make every ride epic."
-            }
+              : "Discover pump tracks, downhill routes, and hidden gems shared by the community."}
+          </p>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            {isAuthenticated
+              ? ""
+              : "Join and start exploring!"}
           </p>
         </div>
 
@@ -45,11 +49,11 @@ export default function HeroSection() {
               Start Exploring
             </Link>
           </Button>
-          
+
           {!isAuthenticated && (
-            <SignInButton 
-              variant="outline" 
-              size="lg" 
+            <SignInButton
+              variant="outline"
+              size="lg"
               className="h-12 px-8 text-lg border-2 hover:bg-blue-50 dark:hover:bg-blue-950/50"
               returnTo="/map"
             >
@@ -60,22 +64,22 @@ export default function HeroSection() {
 
         {/* Feature highlights */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
-          <FeatureHighlight 
+          <FeatureHighlight
             icon={<Waves className="w-5 h-5" />}
             label="100+ Pump Tracks"
             gradient="from-blue-500 to-cyan-500"
           />
-          <FeatureHighlight 
+          <FeatureHighlight
             icon={<Mountain className="w-5 h-5" />}
             label="20+ Hills Mapped"
             gradient="from-green-500 to-emerald-500"
           />
-          <FeatureHighlight 
+          <FeatureHighlight
             icon={<MapPin className="w-5 h-5" />}
             label="Moderated & Private"
             gradient="from-orange-500 to-red-500"
           />
-          <FeatureHighlight 
+          <FeatureHighlight
             icon={<Users className="w-5 h-5" />}
             label="2K+ Riders"
             gradient="from-purple-500 to-pink-500"
@@ -86,14 +90,14 @@ export default function HeroSection() {
   );
 }
 
-const FeatureHighlight = ({ 
-  icon, 
-  label, 
-  gradient 
-}: { 
-  icon: React.ReactNode; 
-  label: string; 
-  gradient: string; 
+const FeatureHighlight = ({
+  icon,
+  label,
+  gradient
+}: {
+  icon: React.ReactNode;
+  label: string;
+  gradient: string;
 }) => (
   <div className="flex flex-col items-center gap-3 p-4 rounded-xl bg-white/60 dark:bg-card/60 backdrop-blur-sm border border-white/20 dark:border-gray-800/50 hover:bg-white/80 dark:hover:bg-card/80 transition-all duration-300">
     <div className={`p-2 rounded-lg bg-gradient-to-br ${gradient} text-white shadow-lg`}>
