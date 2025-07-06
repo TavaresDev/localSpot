@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db/drizzle";
-import { spots, user } from "@/db/schema";
+import { spots, user, events } from "@/db/schema";
 import { validateSession } from "@/lib/auth-server";
 import { withErrorHandling, APIException } from "@/lib/api-error";
 import { SPOT_TYPES, SPOT_DIFFICULTIES, SPOT_VISIBILITIES, SPOT_STATUSES } from "@/lib/types/spots";
-import { eq } from "drizzle-orm";
+import { eq, gte, desc, and } from "drizzle-orm";
 
 const updateSpotSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -91,7 +91,53 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: Ro
     throw APIException.notFound("Spot not found");
   }
 
-  return NextResponse.json(spot);
+  // Get upcoming events at this spot
+  const upcomingEvents = await db
+    .select({
+      id: events.id,
+      title: events.title,
+      description: events.description,
+      startTime: events.startTime,
+      endTime: events.endTime,
+      isRecurring: events.isRecurring,
+      recurrenceData: events.recurrenceData,
+      photos: events.photos,
+      createdAt: events.createdAt,
+      updatedAt: events.updatedAt,
+      userId: events.userId,
+      user: {
+        id: user.id,
+        name: user.name,
+        image: user.image,
+      },
+    })
+    .from(events)
+    .leftJoin(user, eq(events.userId, user.id))
+    .where(
+      and(
+        eq(events.spotId, id),
+        gte(events.startTime, new Date()) // Only upcoming events
+      )
+    )
+    .orderBy(desc(events.startTime))
+    .limit(10); // Limit to 10 upcoming events
+
+  // Get total event count for stats (including past events)
+  const totalEvents = await db
+    .select()
+    .from(events)
+    .where(eq(events.spotId, id));
+
+  // Construct response with events
+  const response = {
+    ...spot,
+    events: upcomingEvents,
+    _count: {
+      events: totalEvents.length,
+    },
+  };
+
+  return NextResponse.json(response);
 });
 
 export const PUT = withErrorHandling(async (request: NextRequest, { params }: RouteParams) => {

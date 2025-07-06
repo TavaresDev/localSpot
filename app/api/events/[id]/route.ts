@@ -36,6 +36,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: Ro
       endTime: events.endTime,
       isRecurring: events.isRecurring,
       recurrenceData: events.recurrenceData,
+      photos: events.photos,
       createdAt: events.createdAt,
       updatedAt: events.updatedAt,
       userId: events.userId,
@@ -49,6 +50,9 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: Ro
         difficulty: spots.difficulty,
         visibility: spots.visibility,
         status: spots.status,
+        bestTimes: spots.bestTimes,
+        safetyNotes: spots.safetyNotes,
+        rules: spots.rules,
         userId: spots.userId,
       },
       user: {
@@ -81,7 +85,32 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: Ro
     throw APIException.forbidden("Access denied to this event");
   }
 
-  return NextResponse.json(event);
+  // Get spot user information if spot exists
+  let spotUser = null;
+  if (event.spot?.userId) {
+    const spotUserData = await db
+      .select({
+        id: user.id,
+        name: user.name,
+        image: user.image,
+      })
+      .from(user)
+      .where(eq(user.id, event.spot.userId))
+      .limit(1);
+    
+    spotUser = spotUserData[0] || null;
+  }
+
+  // Construct the response with proper nested structure
+  const response = {
+    ...event,
+    spot: event.spot ? {
+      ...event.spot,
+      user: spotUser,
+    } : null,
+  };
+
+  return NextResponse.json(response);
 });
 
 export const PUT = withErrorHandling(async (request: NextRequest, { params }: RouteParams) => {

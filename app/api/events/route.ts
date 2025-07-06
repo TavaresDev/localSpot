@@ -19,6 +19,7 @@ const createEventSchema = z.object({
     interval: z.number().min(1).max(12),
     endDate: z.string().datetime().optional(),
   }).optional(),
+  photos: z.array(z.string()).default([]),
 });
 
 const eventQuerySchema = z.object({
@@ -36,16 +37,33 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   const { searchParams } = new URL(request.url);
   const params = eventQuerySchema.parse(Object.fromEntries(searchParams));
   
-  const currentUser = await validateSession();
+  // Try to get current user but don't require authentication for public events
+  const currentUser = await validateSession().catch(() => null);
 
   // Build all conditions first
-  const conditions = [
-    eq(spots.status, "approved"),
-    or(
-      eq(spots.visibility, "public"),
-      eq(events.userId, currentUser.id)
-    )
-  ];
+  const conditions = [];
+
+  // Permission filtering based on authentication status
+  if (currentUser) {
+    // Authenticated users: show events where spot is public AND approved, OR user owns the event
+    conditions.push(
+      or(
+        and(
+          eq(spots.visibility, "public"),
+          eq(spots.status, "approved")
+        ),
+        eq(events.userId, currentUser.id)
+      )
+    );
+  } else {
+    // Unauthenticated users: only show events where spot is public AND approved
+    conditions.push(
+      and(
+        eq(spots.visibility, "public"),
+        eq(spots.status, "approved")
+      )
+    );
+  }
 
   // Apply filters
   if (params.spotId) {
@@ -53,7 +71,11 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
   }
 
   if (params.userId) {
-    conditions.push(eq(events.userId, params.userId));
+    if (params.userId === "me" && currentUser) {
+      conditions.push(eq(events.userId, currentUser.id));
+    } else if (params.userId !== "me") {
+      conditions.push(eq(events.userId, params.userId));
+    }
   }
 
   if (params.startDate) {
@@ -96,6 +118,7 @@ export const GET = withErrorHandling(async (request: NextRequest) => {
       endTime: events.endTime,
       isRecurring: events.isRecurring,
       recurrenceData: events.recurrenceData,
+      photos: events.photos,
       createdAt: events.createdAt,
       updatedAt: events.updatedAt,
       spot: {
@@ -185,6 +208,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
     endTime: endTime,
     isRecurring: validatedData.isRecurring,
     recurrenceData: validatedData.recurrenceData,
+    photos: validatedData.photos,
   };
 
   const [createdEvent] = await db
@@ -202,6 +226,7 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       endTime: events.endTime,
       isRecurring: events.isRecurring,
       recurrenceData: events.recurrenceData,
+      photos: events.photos,
       createdAt: events.createdAt,
       updatedAt: events.updatedAt,
       spot: {
