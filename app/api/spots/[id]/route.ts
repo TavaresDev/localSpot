@@ -36,26 +36,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: Ro
 
   const spotWithUser = await db
     .select({
-      id: spots.id,
-      name: spots.name,
-      description: spots.description,
-      locationLat: spots.locationLat,
-      locationLng: spots.locationLng,
-      visibility: spots.visibility,
-      spotType: spots.spotType,
-      difficulty: spots.difficulty,
-      startLat: spots.startLat,
-      startLng: spots.startLng,
-      endLat: spots.endLat,
-      endLng: spots.endLng,
-      bestTimes: spots.bestTimes,
-      safetyNotes: spots.safetyNotes,
-      rules: spots.rules,
-      photos: spots.photos,
-      status: spots.status,
-      createdAt: spots.createdAt,
-      updatedAt: spots.updatedAt,
-      userId: spots.userId,
+      spot: spots,
       user: {
         id: user.id,
         name: user.name,
@@ -71,7 +52,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: Ro
     throw APIException.notFound("Spot not found");
   }
 
-  const spot = spotWithUser[0];
+  const { spot, user: spotUser } = spotWithUser[0];
 
   // Check access permissions
   const canAccess = 
@@ -131,6 +112,7 @@ export const GET = withErrorHandling(async (request: NextRequest, { params }: Ro
   // Construct response with events
   const response = {
     ...spot,
+    user: spotUser,
     events: upcomingEvents,
     _count: {
       events: totalEvents.length,
@@ -193,25 +175,7 @@ export const PUT = withErrorHandling(async (request: NextRequest, { params }: Ro
   // Get the updated spot with user data
   const spotWithUser = await db
     .select({
-      id: spots.id,
-      name: spots.name,
-      description: spots.description,
-      locationLat: spots.locationLat,
-      locationLng: spots.locationLng,
-      visibility: spots.visibility,
-      spotType: spots.spotType,
-      difficulty: spots.difficulty,
-      startLat: spots.startLat,
-      startLng: spots.startLng,
-      endLat: spots.endLat,
-      endLng: spots.endLng,
-      bestTimes: spots.bestTimes,
-      safetyNotes: spots.safetyNotes,
-      rules: spots.rules,
-      photos: spots.photos,
-      status: spots.status,
-      createdAt: spots.createdAt,
-      updatedAt: spots.updatedAt,
+      spot: spots,
       user: {
         id: user.id,
         name: user.name,
@@ -223,7 +187,11 @@ export const PUT = withErrorHandling(async (request: NextRequest, { params }: Ro
     .where(eq(spots.id, id))
     .limit(1);
 
-  return NextResponse.json(spotWithUser[0]);
+  const result = spotWithUser[0];
+  return NextResponse.json({
+    ...result.spot,
+    user: result.user,
+  });
 });
 
 export const DELETE = withErrorHandling(async (request: NextRequest, { params }: RouteParams) => {
