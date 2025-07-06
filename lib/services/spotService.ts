@@ -8,6 +8,20 @@ export interface SpotApiError {
   field?: string;
 }
 
+export interface SpotFilters {
+  search?: string;
+  type?: string;
+  difficulty?: string;
+  visibility?: string;
+  userId?: string;
+  sort?: 'newest' | 'oldest' | 'name';
+  limit?: number;
+  offset?: number;
+  lat?: number;
+  lng?: number;
+  radius?: number;
+}
+
 export class SpotService {
   private static async handleResponse<T>(response: Response): Promise<T> {
     let data;
@@ -71,22 +85,22 @@ export class SpotService {
     return this.handleResponse<{ success: boolean }>(response);
   }
 
-  static async getSpots(params?: {
-    limit?: number;
-    offset?: number;
-    spotType?: string;
-    difficulty?: string;
-    visibility?: string;
-  }): Promise<{ data: SpotWithUser[]; pagination: { limit: number; offset: number; total: number } }> {
-    const searchParams = new URLSearchParams();
+  static async getSpots(filters?: SpotFilters): Promise<{ spots: SpotWithUser[]; pagination: any }> {
+    const params = new URLSearchParams();
     
-    if (params?.limit) searchParams.set("limit", params.limit.toString());
-    if (params?.offset) searchParams.set("offset", params.offset.toString());
-    if (params?.spotType) searchParams.set("spotType", params.spotType);
-    if (params?.difficulty) searchParams.set("difficulty", params.difficulty);
-    if (params?.visibility) searchParams.set("visibility", params.visibility);
+    if (filters?.search) params.append('search', filters.search);
+    if (filters?.type) params.append('type', filters.type);
+    if (filters?.difficulty) params.append('difficulty', filters.difficulty);
+    if (filters?.visibility) params.append('visibility', filters.visibility);
+    if (filters?.userId) params.append('userId', filters.userId);
+    if (filters?.sort) params.append('sort', filters.sort);
+    if (filters?.limit) params.append('limit', filters.limit.toString());
+    if (filters?.offset) params.append('offset', filters.offset.toString());
+    if (filters?.lat) params.append('lat', filters.lat.toString());
+    if (filters?.lng) params.append('lng', filters.lng.toString());
+    if (filters?.radius) params.append('radius', filters.radius.toString());
 
-    const response = await fetch(`/api/spots?${searchParams.toString()}`);
+    const response = await fetch(`/api/spots?${params.toString()}`);
     return this.handleResponse(response);
   }
 }
