@@ -217,6 +217,9 @@ export function validateSearchParams(params: Partial<BusinessSearchParams>): str
  * Generate Google Maps URL for directions
  */
 export function getDirectionsUrl(business: Business, origin?: { lat: number; lng: number }): string {
+  if (!business.location) {
+    throw new Error('Business location is required for directions');
+  }
   const destination = `${business.location.lat},${business.location.lng}`;
   const originParam = origin ? `&origin=${origin.lat},${origin.lng}` : "";
   return `https://www.google.com/maps/dir/?api=1&destination=${destination}${originParam}`;
@@ -269,6 +272,7 @@ export function sortBusinesses(
     case "distance":
       if (!userLocation) return sorted;
       return sorted.sort((a, b) => {
+        if (!a.location || !b.location) return 0;
         const distA = calculateDistance(
           userLocation.lat, userLocation.lng,
           a.location.lat, a.location.lng

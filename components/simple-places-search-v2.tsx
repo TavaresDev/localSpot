@@ -9,6 +9,8 @@ import { BusinessCard } from '@/components/business-card';
 
 // Two different approaches:
 import { usePlacesSearch, usePlacesSearchMutation } from '@/lib/hooks/queries/usePlacesSearch';
+import { Business } from '@/lib/types/business';
+
 
 interface Props {
   mode: 'manual' | 'auto'; // Choose implementation mode
@@ -16,7 +18,7 @@ interface Props {
 
 export function SimplePlacesSearchV2({ mode = 'manual' }: Props) {
   const [query, setQuery] = useState('');
-  
+
   if (mode === 'auto') {
     return <AutoSearchImplementation query={query} setQuery={setQuery} />;
   } else {
@@ -25,12 +27,12 @@ export function SimplePlacesSearchV2({ mode = 'manual' }: Props) {
 }
 
 // OPTION A: Manual trigger with TanStack Query caching
-function ManualSearchImplementation({ 
-  query, 
-  setQuery 
-}: { 
-  query: string; 
-  setQuery: (q: string) => void; 
+function ManualSearchImplementation({
+  query,
+  setQuery
+}: {
+  query: string;
+  setQuery: (q: string) => void;
 }) {
   // Using mutation hook for manual trigger (like current implementation)
   const { search, results, loading, error, clearResults } = usePlacesSearchMutation();
@@ -50,7 +52,7 @@ function ManualSearchImplementation({
     clearResults();
   };
 
-  return <SearchUI 
+  return <SearchUI
     query={query}
     setQuery={setQuery}
     onSearch={handleSearch}
@@ -64,12 +66,12 @@ function ManualSearchImplementation({
 }
 
 // OPTION B: Auto-search with debouncing (like spots search)
-function AutoSearchImplementation({ 
-  query, 
-  setQuery 
-}: { 
-  query: string; 
-  setQuery: (q: string) => void; 
+function AutoSearchImplementation({
+  query,
+  setQuery
+}: {
+  query: string;
+  setQuery: (q: string) => void;
 }) {
   // Using query hook for auto-search with debouncing
   const { data, isLoading, error } = usePlacesSearch(
@@ -83,7 +85,7 @@ function AutoSearchImplementation({
     setQuery('');
   };
 
-  return <SearchUI 
+  return <SearchUI
     query={query}
     setQuery={setQuery}
     onClear={handleClear}
@@ -111,7 +113,7 @@ function SearchUI({
   onSearch?: () => void;
   onKeyPress?: (e: React.KeyboardEvent) => void;
   onClear: () => void;
-  results: any[];
+  results: Business[]; // Changed from any[]
   loading: boolean;
   error: string | null;
   showSearchButton: boolean;
@@ -126,8 +128,8 @@ function SearchUI({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder={showSearchButton 
-                  ? "Search for restaurants, cafes, stores..." 
+                placeholder={showSearchButton
+                  ? "Search for restaurants, cafes, stores..."
                   : "Type to search... (auto-search enabled)"
                 }
                 value={query}
@@ -137,7 +139,7 @@ function SearchUI({
                 disabled={loading}
               />
             </div>
-            
+
             {showSearchButton && (
               <Button
                 onClick={onSearch}
@@ -151,7 +153,7 @@ function SearchUI({
                 )}
               </Button>
             )}
-            
+
             {(results.length > 0 || error) && (
               <Button
                 variant="outline"
@@ -187,7 +189,7 @@ function SearchUI({
         <Card>
           <CardContent className="p-4">
             <h3 className="font-semibold mb-4 text-green-700">
-              ✅ Found {results.length} results for "{query}"
+              ✅ Found {results.length} results for &quot;{query}&quot;
               {showSearchButton ? '' : ' (cached results load instantly!)'}
             </h3>
             <div className="space-y-3">
@@ -209,7 +211,7 @@ function SearchUI({
         <Card className="border-gray-200 bg-gray-50">
           <CardContent className="p-4 text-center">
             <p className="text-gray-600">
-              🔍 No businesses found for <strong>"{query}"</strong>
+              🔍 No businesses found for <strong>&quot;{query}&quot;</strong>
             </p>
           </CardContent>
         </Card>

@@ -31,7 +31,7 @@ export default function TutorialSection() {
                   </h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     Open the map and double-tap anywhere to drop a pin at your favorite longboarding spot. 
-                    It's that simple!
+                    It&apos;s that simple!
                   </p>
                 </div>
               </div>

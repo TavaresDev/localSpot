@@ -3,21 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, DollarSign, Phone, Globe, Clock, ImageIcon } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
-
-export interface Business {
-  id: string;
-  name: string;
-  address?: string;
-  businessType?: string; // e.g., "restaurant", "cafe", "park"
-  rating?: number;
-  ratingCount?: number;
-  priceLevel?: string;
-  isOpen?: boolean;
-  phone?: string;
-  website?: string;
-  photos?: string[];
-  photoUrl?: string; // Single photo URL
-}
+import { Business } from "@/lib/types/business";
 
 interface BusinessCardProps {
   business: Business;

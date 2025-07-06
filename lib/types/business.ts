@@ -76,7 +76,7 @@ export interface Business {
   id: string;
   name: string;
   address?: string;
-  location: {
+  location?: {
     lat: number;
     lng: number;
   };
@@ -88,6 +88,7 @@ export interface Business {
   isOpen?: boolean;
   openingHours?: string[];
   photos?: string[];
+  photoUrl?: string; // Single photo URL for backward compatibility
   businessType?: string;
   businessStatus?: string;
 }
