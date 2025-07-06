@@ -55,6 +55,8 @@ export interface SpotWithUser extends Spot {
   };
 }
 
+// Remove this - keep it simple
+
 export interface EventWithSpot extends Event {
   spot: Spot;
   user: {
@@ -101,3 +103,57 @@ export const SPOT_DIFFICULTIES = ["beginner", "intermediate", "advanced", "exper
 export const SPOT_VISIBILITIES = ["public", "private", "friends"] as const;
 export const SPOT_STATUSES = ["pending", "approved", "rejected"] as const;
 export const USER_ROLES = ["user", "moderator", "admin"] as const;
+
+
+//  new implmentation of types to improve DRY and update typescript types names
+export interface SpotTypeConfig {
+  icon: string;
+  color: string;
+  displayName: string;
+  description?: string;
+}
+
+export const SPOT_TYPE_CONFIG: Record<string, SpotTypeConfig> = {
+  downhill: {
+    icon: "🏔️",
+    color: "#EF4444", 
+    displayName: "Downhill",
+    description: "Fast descents with technical turns"
+  },
+  freeride: {
+    icon: "🛣️", 
+    color: "#F59E0B",
+    displayName: "Freeride", 
+    description: "Open road riding with freedom to carve"
+  },
+  freestyle: {
+    icon: "🛴",
+    color: "#8B5CF6", 
+    displayName: "Freestyle",
+    description: "Tricks and technical riding"
+  },
+  cruising: {
+    icon: "🏞️",
+    color: "#10B981",
+    displayName: "Cruising",
+    description: "Relaxed riding for all skill levels"
+  },
+  dancing: {
+    icon: "💃",
+    color: "#EC4899",
+    displayName: "Dancing", 
+    description: "Flowing dance moves on the board"
+  },
+  pumping: {
+    icon: "⚡",
+    color: "#06B6D4",
+    displayName: "Pumping", 
+    description: "Generate speed through pumping motion"
+  },
+} as const;
+
+// Helper functions
+export const getSpotTypeIcon = (type: string) => SPOT_TYPE_CONFIG[type]?.icon || "📍";
+export const getSpotTypeColor = (type: string) => SPOT_TYPE_CONFIG[type]?.color || "#3B82F6";
+export const getSpotTypeDisplay = (type: string) => SPOT_TYPE_CONFIG[type]?.displayName || type;
+export const getSpotTypeDescription = (type: string) => SPOT_TYPE_CONFIG[type]?.description;
