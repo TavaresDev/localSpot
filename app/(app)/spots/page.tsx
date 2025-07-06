@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { SpotCard } from "@/components/spots/spot-card";
 import { SpotWithUser } from "@/lib/types/spots";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { Loader2, Search, MapIcon } from "lucide-react";
 import Link from "next/link";
 
 export default function SpotsPage() {
+  const router = useRouter();
   const [spots, setSpots] = useState<SpotWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -151,7 +153,7 @@ export default function SpotsPage() {
                     key={spot.id}
                     spot={spot}
                     onViewDetails={() => {
-                      window.location.href = `/spots/${spot.id}`;
+                      router.push(`/spots/${spot.id}`);
                     }}
                   />
                 ))}

@@ -1,21 +1,29 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { MapView } from "@/components/maps/map-view-new";
 import { SpotCard } from "@/components/spots/spot-card";
-import { SpotWithUser } from "@/lib/types/spots";
+import { EventCard } from "@/components/events/event-card";
+import { SpotWithUser, EventWithSpot } from "@/lib/types/spots";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { MapIcon, List } from "lucide-react";
+import { MapIcon, List, Calendar } from "lucide-react";
 
 export default function MapPage() {
+  const router = useRouter();
   const [spots, setSpots] = useState<SpotWithUser[]>([]);
+  const [events, setEvents] = useState<EventWithSpot[]>([]);
   const [selectedSpot, setSelectedSpot] = useState<SpotWithUser | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventWithSpot | null>(null);
   const [spotsLoading, setSpotsLoading] = useState(true);
+  const [eventsLoading, setEventsLoading] = useState(true);
   const [spotsError, setSpotsError] = useState<string | null>(null);
+  const [eventsError, setEventsError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
+  const [showEvents, setShowEvents] = useState<boolean>(true);
 
   // Get user location (non-blocking)
   useEffect(() => {
@@ -74,12 +82,46 @@ export default function MapPage() {
     fetchSpots();
   }, []); // Remove userLocation dependency to start loading immediately
 
+  // Fetch events immediately (parallel to spots loading)
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        setEventsLoading(true);
+        setEventsError(null);
+
+        const params = new URLSearchParams();
+        params.append("upcoming", "true"); // Only show upcoming events on map
+        params.append("limit", "100");
+
+        const response = await fetch(`/api/events?${params}`);
+        if (!response.ok) throw new Error("Failed to fetch events");
+
+        const data = await response.json();
+        setEvents(data.events || []);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+        setEventsError("Failed to load events");
+      } finally {
+        setEventsLoading(false);
+      }
+    }
+
+    fetchEvents();
+  }, []);
+
   const handleSpotClick = (spot: SpotWithUser) => {
     setSelectedSpot(spot);
+    setSelectedEvent(null); // Clear event selection
+  };
+
+  const handleEventClick = (event: EventWithSpot) => {
+    setSelectedEvent(event);
+    setSelectedSpot(null); // Clear spot selection
   };
 
   const handleMapClick = () => {
     setSelectedSpot(null);
+    setSelectedEvent(null);
   };
 
   // Use default location if user location is not available
@@ -112,6 +154,16 @@ export default function MapPage() {
             List
           </Button>
 
+          <Button
+            variant={showEvents ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowEvents(!showEvents)}
+            className="hidden sm:flex"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Events
+          </Button>
+
           {/* Mobile Sheet for spots list */}
           <Sheet>
             <SheetTrigger asChild>
@@ -131,7 +183,7 @@ export default function MapPage() {
                       spot={spot}
                       onViewDetails={() => {
                         // Navigate to spot details
-                        window.location.href = `/spots/${spot.id}`;
+                        router.push(`/spots/${spot.id}`);
                       }}
                       compact
                     />
@@ -150,13 +202,16 @@ export default function MapPage() {
           <>
             <MapView
               spots={spots}
+              events={events}
               onSpotClick={handleSpotClick}
+              onEventClick={handleEventClick}
               onMapClick={handleMapClick}
               center={userLocation || { lat: 37.7749, lng: -122.4194 }} // Default to SF if no user location
               zoom={12}
               enableSpotCreation={true}
               height="100%"
               userData={userLocation} // Pass user location for future use
+              showEvents={showEvents}
             />
 
             {/* Selected Spot Card Overlay */}
@@ -165,7 +220,24 @@ export default function MapPage() {
                 <SpotCard
                   spot={selectedSpot}
                   onViewDetails={() => {
-                    window.location.href = `/spots/${selectedSpot.id}`;
+                    router.push(`/spots/${selectedSpot.id}`);
+                  }}
+                  compact
+                />
+              </div>
+            )}
+
+            {/* Selected Event Card Overlay */}
+            {selectedEvent && (
+              <div className="absolute bottom-4 left-4 right-4 z-10 sm:left-4 sm:right-auto sm:max-w-sm">
+                <EventCard
+                  event={selectedEvent}
+                  onViewDetails={() => {
+                    router.push(`/events/${selectedEvent.id}`);
+                  }}
+                  onJoinEvent={() => {
+                    // TODO: Implement join event functionality
+                    console.log("Join event:", selectedEvent.id);
                   }}
                   compact
                 />
@@ -189,7 +261,7 @@ export default function MapPage() {
                     key={spot.id}
                     spot={spot}
                     onViewDetails={() => {
-                      window.location.href = `/spots/${spot.id}`;
+                      router.push(`/spots/${spot.id}`);
                     }}
                   />
                 ))}
