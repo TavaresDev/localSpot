@@ -374,6 +374,14 @@ See [Docs/ARCHITECTURE_DECISIONS.md](./Docs/ARCHITECTURE_DECISIONS.md) for detai
 - **ADR-002**: Route Groups for URL Organization  
 - **ADR-003**: Centralized Type System
 - **ADR-004**: Hook Organization Architecture
+- **ADR-005**: TanStack Query Implementation for Data Layer
+
+### TanStack Query Data Architecture
+See [Docs/TANSTACK_QUERY_ARCHITECTURE.md](./Docs/TANSTACK_QUERY_ARCHITECTURE.md) for comprehensive TanStack Query implementation details including:
+- **Three-layer architecture**: Pages → Query Hooks → Services
+- **Performance optimizations**: Debouncing, caching strategies, memory management
+- **Migration benefits**: 200+ lines of boilerplate removed, automatic error handling
+- **Best practices**: When to use/not use, cache key design, type safety
 
 ### Implementation Planning
 See [Docs/IMPLEMENTATION_PLAN.md](./Docs/IMPLEMENTATION_PLAN.md) for the complete SpotMap longboarding app development roadmap, including:

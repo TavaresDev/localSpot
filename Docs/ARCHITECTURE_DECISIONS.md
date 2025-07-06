@@ -814,5 +814,297 @@ useEffect(() => {
 
 ---
 
+## ADR-006: Client-Side Data Fetching Architecture
+
+### Status
+**ACCEPTED** - Implementation Planned
+
+### Context
+The application currently has inconsistent data fetching patterns across pages:
+- Event creation uses proper hook abstraction (`useEventForm`)
+- All other pages use direct fetch calls with duplicated loading/error state management
+- No caching, debouncing, or request cancellation
+- Performance issues (search triggers API calls on every keystroke)
+- Code duplication (~200+ lines of repeated fetch logic)
+
+### Decision
+**TanStack Query v5 with Custom Hook Abstraction Layer**
+
+### Technical Architecture
+
+#### Core Technology Stack
+```typescript
+// Foundation
+@tanstack/react-query v5  // Data fetching, caching, synchronization
+Service Layer Pattern     // API abstraction (existing)
+Custom Hook Layer         // Business logic encapsulation
+```
+
+#### Architecture Pattern
+```
+Pages/Components
+    ↓ (use hooks)
+Custom Query Hooks (lib/hooks/queries/)
+    ↓ (call services)
+Service Layer (lib/services/)
+    ↓ (make requests)
+API Routes (app/api/)
+    ↓ (query database)
+Database (Neon PostgreSQL)
+```
+
+#### Hook Organization Strategy
+```
+lib/hooks/queries/
+├── useSpots.ts          # List with filters, debouncing
+├── useSpot.ts           # Single spot details
+├── useEvents.ts         # Event listing with filters
+├── useEvent.ts          # Single event details
+├── useProfile.ts        # User profile data
+├── useUserSpots.ts      # User's created spots
+└── index.ts             # Export all hooks
+```
+
+### Technical Implementation
+
+#### TanStack Query v5 Best Practices
+```typescript
+// Single object parameter pattern (v5 requirement)
+export function useSpots(filters?: SpotFilters) {
+  const debouncedFilters = useDebounce(filters, 300);
+  
+  return useQuery({
+    queryKey: ['spots', debouncedFilters],
+    queryFn: () => spotService.getSpots(debouncedFilters),
+    staleTime: 5 * 60 * 1000,  // 5 minutes
+    gcTime: 30 * 60 * 1000,    // 30 minutes (replaces cacheTime)
+  });
+}
+```
+
+#### Service Layer Integration
+```typescript
+// Enhance existing SpotService pattern
+export const eventService = {
+  getEvents: (filters?: EventFilters) => 
+    fetch(`/api/events?${buildQuery(filters)}`).then(handleResponse),
+  getEvent: (id: string) => 
+    fetch(`/api/events/${id}`).then(handleResponse),
+  createEvent: (data: CreateEventForm) =>
+    fetch('/api/events', { method: 'POST', body: JSON.stringify(data) }).then(handleResponse),
+  updateEvent: (id: string, data: Partial<CreateEventForm>) =>
+    fetch(`/api/events/${id}`, { method: 'PUT', body: JSON.stringify(data) }).then(handleResponse),
+};
+```
+
+#### Page Simplification Example
+```typescript
+// Before: 55+ lines of fetch logic, state management
+const [spots, setSpots] = useState<SpotWithUser[]>([]);
+const [isLoading, setIsLoading] = useState(true);
+const [error, setError] = useState<string | null>(null);
+
+useEffect(() => {
+  async function fetchSpots() {
+    try {
+      setIsLoading(true);
+      const params = new URLSearchParams();
+      // ... complex parameter building
+      const response = await fetch(`/api/spots?${params}`);
+      const data = await response.json();
+      setSpots(data.spots || []);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+  fetchSpots();
+}, [searchQuery, spotType, difficulty, sortBy]);
+
+// After: 1 line + automatic performance optimizations
+const { data: spots, isLoading, error } = useSpots({ 
+  search: searchQuery, 
+  type: spotType, 
+  difficulty,
+  sort: sortBy
+});
+```
+
+### Performance Optimizations
+
+#### Automatic Caching Strategy
+```typescript
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,    // Data fresh for 5 minutes
+      gcTime: 30 * 60 * 1000,      // Cache cleanup after 30 minutes
+      retry: 1,                     // Single retry on failure
+      refetchOnWindowFocus: false,  // Don't refetch on tab switch
+    },
+  },
+});
+```
+
+#### Built-in Performance Features
+1. **Request Deduplication** - Multiple components requesting same data = single API call
+2. **Background Refetching** - Stale data refreshed automatically
+3. **Intelligent Caching** - Cache based on query keys, automatic invalidation
+4. **Optimistic Updates** - Instant UI feedback for mutations
+5. **Debounced Search** - 300ms delay for search inputs (implemented in hooks)
+
+#### Expected Performance Gains
+| Scenario | Before | After | Improvement |
+|----------|--------|-------|-------------|
+| Search "longboard" | 9 API calls | 1 API call | 900% faster |
+| Navigate back/forward | Full refetch | Cache hit | Instant |
+| Multiple components same data | N requests | 1 request | N×faster |
+| Filter changes | Overlapping requests | Cancelled/deduplicated | No race conditions |
+
+### Implementation Benefits
+
+#### Code Quality
+- **Remove 200+ lines** of duplicated fetch logic
+- **Single pattern** for all data operations
+- **Better error handling** with retry logic and global error boundaries
+- **Type safety** with full TypeScript integration
+
+#### Developer Experience
+- **TanStack Query DevTools** for debugging
+- **Consistent patterns** across all pages
+- **Less boilerplate** for new data fetching needs
+- **Better testing** with built-in mocking support
+
+#### User Experience
+- **Instant navigation** due to caching
+- **Optimistic updates** for immediate feedback
+- **Better offline experience** with stale-while-revalidate
+- **Faster search** with debouncing and deduplication
+
+### Decision Rationale
+
+#### Why TanStack Query v5?
+1. **Perfect Use Case Match** - Location data, search/filtering, navigation caching
+2. **Performance Critical** - Our app suffers from excessive API calls
+3. **Established Pattern** - Already using hook abstraction successfully (`useEventForm`)
+4. **Modern React Patterns** - Aligns with current React best practices
+5. **Bundle Size Justified** - +48kb for massive performance gains
+
+#### Why Not Alternatives?
+**Custom Hooks Only:**
+- Would still require manual implementation of caching, deduplication, retries
+- High maintenance burden for advanced features
+- Missing performance optimizations
+
+**SWR:**
+- Less feature-complete than TanStack Query
+- Smaller ecosystem and community
+- Still adds dependency without full benefits
+
+**Zustand/Redux for Data:**
+- Not designed for server state management
+- Missing caching and synchronization features
+- More complex state management patterns
+
+### Implementation Strategy
+
+#### Phase 1: Foundation (30 minutes)
+- Install TanStack Query v5
+- Setup QueryClient with performance-optimized defaults
+- Add provider to app layout
+
+#### Phase 2: Service Layer Enhancement (45 minutes)
+- Extend existing SpotService with missing methods
+- Create EventService mirroring SpotService patterns
+- Create ProfileService for user-related data
+
+#### Phase 3: Query Hooks (60 minutes)
+- Create query hooks following TanStack Query v5 patterns
+- Implement debouncing for search inputs
+- Add proper TypeScript types and error handling
+
+#### Phase 4: Page Migration (90 minutes)
+- Migrate spots listing page (highest impact)
+- Migrate events listing and detail pages
+- Migrate profile page
+- Update spot detail pages
+
+#### Phase 5: Optimizations (30 minutes)
+- Add optimistic updates for mutations
+- Implement advanced caching strategies
+- Add global error handling
+
+### Monitoring and Success Metrics
+
+#### Performance Metrics
+- **API Request Reduction** - Track number of API calls before/after
+- **Page Load Speed** - Measure time to interactive for listing pages
+- **Cache Hit Rates** - Monitor cache effectiveness
+- **Error Rates** - Track failed requests and retries
+
+#### Code Quality Metrics
+- **Lines of Code Reduction** - Measure boilerplate elimination
+- **Bug Reports** - Track data-related issues
+- **Developer Velocity** - Time to implement new data fetching features
+
+### Migration Risk Assessment
+
+#### Low Risk Factors
+- **Backward Compatible** - Can migrate page by page
+- **Existing Patterns** - Already using hook abstraction successfully
+- **Service Layer Preserved** - API layer unchanged
+- **TypeScript Safety** - Full type checking prevents runtime errors
+
+#### Mitigation Strategies
+- **Incremental Migration** - Start with least critical pages
+- **Feature Flags** - Easy rollback if issues arise
+- **Comprehensive Testing** - Test all data flows before migration
+- **Documentation** - Clear migration guide for team members
+
+### Future Enhancements
+
+#### Advanced Features (Post-Implementation)
+1. **Infinite Queries** - For long spot/event lists
+2. **Optimistic Updates** - Instant UI feedback for mutations
+3. **Offline Support** - PWA integration with cached data
+4. **Real-time Updates** - WebSocket integration for live data
+5. **Prefetching** - Anticipate user navigation patterns
+
+#### Performance Monitoring
+- **React DevTools Profiler** - Component render optimization
+- **TanStack Query DevTools** - Cache and query inspection
+- **Bundle Analyzer** - Monitor bundle size impact
+- **Web Vitals** - Track Core Web Vitals improvements
+
+### Related Decisions
+- [ADR-001: Dual Interface Architecture](./ARCHITECTURE_DECISIONS.md#adr-001) - Shared hooks across mobile/desktop
+- [ADR-004: Hook Organization Architecture](./ARCHITECTURE_DECISIONS.md#adr-004) - Hook placement patterns
+- [ADR-003: Centralized Type System](./ARCHITECTURE_DECISIONS.md#adr-003) - Type safety integration
+
+### Consequences
+
+#### Positive
+- ✅ **Massive performance improvements** through caching and deduplication
+- ✅ **Dramatic code reduction** (~200+ lines eliminated)
+- ✅ **Better user experience** with instant navigation and search
+- ✅ **Improved developer experience** with consistent patterns
+- ✅ **Future-proof architecture** for advanced features
+- ✅ **Better error handling** with built-in retry logic
+
+#### Negative
+- ❌ **Bundle size increase** (+48kb gzipped)
+- ❌ **Learning curve** for TanStack Query concepts
+- ❌ **Migration effort** required (estimated 4-5 hours)
+- ❌ **Additional dependency** to maintain
+
+#### Mitigation
+- Bundle size justified by performance gains
+- Incremental migration reduces risk
+- Comprehensive documentation and examples
+- Well-maintained library with strong community support
+
+---
+
 *Last updated: [Current Date]*
 *Next review: [Quarterly]*
