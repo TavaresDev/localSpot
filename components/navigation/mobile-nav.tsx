@@ -44,11 +44,11 @@ const publicNavItems = [
 ];
 
 const authenticatedNavItems = [
-  {
-    href: "/",
-    label: "Home",
-    icon: Home,
-  },
+  // {
+  //   href: "/",
+  //   label: "Home",
+  //   icon: Home,
+  // },
   {
     href: "/map",
     label: "Map",
