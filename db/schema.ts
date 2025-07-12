@@ -108,7 +108,7 @@ export const spots = pgTable("spots", {
   safetyNotes: text("safetyNotes"),
   rules: text("rules"),
   photos: jsonb("photos").default([]),
-  status: text("status").notNull().default("pending"),
+  status: text("status").notNull().default("draft"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
   updatedAt: timestamp("updatedAt").notNull().defaultNow(),
 });

@@ -1,0 +1,1 @@
+ALTER TABLE "spots" ALTER COLUMN "status" SET DEFAULT 'draft';
