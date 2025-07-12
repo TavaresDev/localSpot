@@ -10,6 +10,7 @@ import {
   MessageCircleIcon,
   Settings,
   Upload,
+  Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -30,6 +31,11 @@ const navItems: NavItem[] = [
     label: "Spots",
     href: "/dashboard/spots",
     icon: MapPin,
+  },
+  {
+    label: "Moderation",
+    href: "/dashboard/moderation",
+    icon: Shield,
   },
   {
     label: "Chat",
