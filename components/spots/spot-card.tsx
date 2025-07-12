@@ -1,23 +1,25 @@
 "use client";
 
-import { SpotWithUser } from "@/lib/types/spots";
+import { SpotWithUser, getSpotTypeIcon, getSpotTypeColor, getSpotTypeDisplay } from "@/lib/types/spots";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import {
-  MapPin,
   User,
   Clock,
   Shield,
   Lock,
   Users,
-  Globe
+  Globe,
+  ChevronRight
 } from "lucide-react";
 
 interface SpotCardProps {
   spot: SpotWithUser;
   onViewDetails?: () => void;
   onEditSpot?: () => void;
+  onRequestPublic?: () => void;
   isOwner?: boolean;
   compact?: boolean;
 }
@@ -26,6 +28,7 @@ export function SpotCard({
   spot,
   onViewDetails,
   onEditSpot,
+  onRequestPublic,
   isOwner = false,
   compact = false
 }: SpotCardProps) {
@@ -39,15 +42,21 @@ export function SpotCard({
     }
   };
 
-  const getSpotTypeIcon = (spotType: string) => {
-    switch (spotType) {
-      case "downhill": return "🏔️";
-      case "freeride": return "🛣️";
-      case "freestyle": return "🛴";
-      case "cruising": return "🏞️";
-      case "dancing": return "💃";
-      case "pumping": return "⚡";
-      default: return "📍";
+  const getSpotImage = () => {
+    // Check if spot has photos (now expecting string URLs)
+    if (Array.isArray(spot.photos) && spot.photos.length > 0 && typeof spot.photos[0] === 'string') {
+      return spot.photos[0];
+    }
+
+    // Return spot type specific placeholder
+    switch (spot.spotType) {
+      case "downhill": return "/placeholders/downhill.svg";
+      case "freeride": return "/placeholders/freeride.svg";
+      case "freestyle": return "/placeholders/freestyle.svg";
+      case "cruising": return "/placeholders/cruising.svg";
+      case "dancing": return "/placeholders/dancing.svg";
+      case "pumping": return "/placeholders/pumping.svg";
+      default: return "/placeholders/default-spot.svg";
     }
   };
 
@@ -70,72 +79,94 @@ export function SpotCard({
   };
 
   return (
-    <Card className={`hover:shadow-lg transition-shadow ${getStatusColor(spot.status)}`}>
-      <CardContent className={compact ? "p-4" : "p-6"}>
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center space-x-2 flex-1 min-w-0">
-            <span className="text-xl">{getSpotTypeIcon(spot.spotType)}</span>
-            <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-lg truncate">{spot.name}</h3>
-              <div className="flex items-center space-x-2 mt-1">
-                <Badge
-                  variant="secondary"
-                  className={`text-xs text-white ${getDifficultyColor(spot.difficulty)}`}
-                >
-                  {spot.difficulty}
-                </Badge>
-                {spot.status !== "approved" && (
-                  <Badge variant="outline" className="text-xs">
-                    {spot.status}
-                  </Badge>
-                )}
-              </div>
-            </div>
-          </div>
+    <Card className={`group hover:shadow-xl py-0 transition-all duration-300 overflow-hidden ${getStatusColor(spot.status)}`}>
+      {/* Image Header */}
+      <div className="relative h-40 overflow-hidden">
+        <Image
+          src={getSpotImage()}
+          alt={spot.name}
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          onError={(e) => {
+            // Fallback to generic placeholder if specific one fails
+            e.currentTarget.src = "/placeholders/default-spot.svg";
+          }}
+        />
 
-          <div className="flex items-center space-x-1 text-muted-foreground">
+        {/* Overlay with spot type and visibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        {/* <div className="absolute top-3 left-3 flex items-center space-x-2">
+          <div
+            className="p-2 rounded-full text-white shadow-lg"
+            style={{ backgroundColor: getSpotTypeColor(spot.spotType) }}
+          >
+            <span className="text-lg">{getSpotTypeIcon(spot.spotType)}  icon</span>
+          </div>
+        </div> */}
+
+        <div className="absolute top-3 right-3 flex items-center space-x-2">
+          <div className="p-1.5 bg-white/20 backdrop-blur-sm rounded-full">
             {getVisibilityIcon(spot.visibility)}
           </div>
+          {spot.status !== "approved" && (
+            <Badge variant="secondary" className="bg-yellow-500/90 text-white">
+              {spot.status}
+            </Badge>
+          )}
         </div>
 
+        {/* Title overlay */}
+        <div className="absolute bottom-3 left-3 right-3">
+          <h3 className="text-white font-bold text-lg truncate drop-shadow-lg">
+            {spot.name}
+          </h3>
+          <div className="flex items-center space-x-2 mt-1">
+            <Badge
+              className={`text-xs text-white shadow-sm ${getDifficultyColor(spot.difficulty)}`}
+            >
+              {spot.difficulty}
+            </Badge>
+            <span className="text-white/90 text-sm">
+              {getSpotTypeDisplay(spot.spotType)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <CardContent className={compact ? "p-4" : "p-5"}>
+        {/* Description */}
         {spot.description && (
-          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+          <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">
             {spot.description}
           </p>
         )}
 
-        <div className="space-y-2 text-xs text-muted-foreground">
+        {/* Metadata */}
+        {/* <div className="space-y-3 text-sm">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <User className="h-3 w-3" />
-                <span>{spot.user.name}</span>
-              </div>
-
-              <div className="flex items-center space-x-1">
-                <MapPin className="h-3 w-3" />
-                <span className="capitalize">{spot.spotType}</span>
-              </div>
+            <div className="flex items-center space-x-1 text-muted-foreground">
+              <User className="h-4 w-4" />
+              <span>{spot.user.name}</span>
             </div>
-
-            <div className="text-xs">
+            <span className="text-xs text-muted-foreground">
               {new Date(spot.createdAt).toLocaleDateString()}
-            </div>
+            </span>
           </div>
 
           {spot.bestTimes && (
-            <div className="flex items-center space-x-1">
-              <Clock className="h-3 w-3" />
-              <span>Best: {spot.bestTimes}</span>
+            <div className="flex items-center space-x-1 text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>Best times: {spot.bestTimes}</span>
             </div>
           )}
-        </div>
+        </div> */}
 
+        {/* Safety & Rules */}
         {spot.safetyNotes && (
-          <div className="mt-3 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded text-xs">
-            <div className="flex items-start space-x-1">
-              <Shield className="h-3 w-3 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
-              <p className="text-yellow-800 dark:text-yellow-200">
+          <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <Shield className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
+              <p className="text-yellow-800 dark:text-yellow-200 text-sm">
                 {spot.safetyNotes}
               </p>
             </div>
@@ -143,39 +174,41 @@ export function SpotCard({
         )}
 
         {spot.rules && (
-          <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-xs">
-            <p className="text-blue-800 dark:text-blue-200">
+          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <p className="text-blue-800 dark:text-blue-200 text-sm">
               📋 {spot.rules}
             </p>
           </div>
         )}
-
-        {/* {Array.isArray(spot.photos) && spot.photos.length > 0 && (
-          <div className="mt-3">
-            <h4 className="font-semibold text-sm mb-1">Photos:</h4>
-            <div className="flex flex-wrap gap-2">
-              {spot.photos.map((photo: string, idx: number) => (
-                <img
-                  key={idx}
-                  src={photo || "/ldp.svg"}
-                  alt={`Spot photo ${idx + 1}`}
-                  className="w-16 h-16 object-cover rounded"
-                />
-              ))}
-            </div>
-          </div>
-        )} */}
       </CardContent>
 
-      <CardFooter className="pt-0 pb-4 px-6">
-        <div className="flex justify-between w-full">
-          <Button variant="outline" size="sm" onClick={onViewDetails}>
+      <CardFooter className="pt-0 pb-4 px-5">
+        <div className="flex gap-2 w-full">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onViewDetails}
+            className="flex-1 group-hover:border-primary transition-colors"
+          >
             View Details
+            <ChevronRight className="h-3 w-3 ml-1" />
           </Button>
 
-          {isOwner && (
+          {/* {isOwner && (
             <Button variant="outline" size="sm" onClick={onEditSpot}>
               Edit
+            </Button>
+          )} */}
+
+          {/* Make Public button for draft and rejected spots */}
+          {isOwner && (spot.status === "draft" || spot.status === "rejected") && onRequestPublic && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRequestPublic}
+              className="text-blue-600 hover:text-blue-700"
+            >
+              Make Public
             </Button>
           )}
         </div>

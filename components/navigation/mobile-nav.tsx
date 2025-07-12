@@ -14,11 +14,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { 
-  MapIcon, 
-  Home, 
-  Search, 
-  Plus, 
+import {
+  MapIcon,
+  Home,
+  Search,
+  Plus,
   User,
   Calendar,
   LogOut,
@@ -78,9 +78,9 @@ export function MobileNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border lg:hidden">
       <div className="flex items-center justify-around px-2 py-1">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || 
+          const isActive = pathname === item.href ||
             (item.href !== "/" && pathname.startsWith(item.href));
-          
+
           return (
             <Link
               key={item.href}
@@ -104,8 +104,8 @@ export function MobileNav() {
         {/* Sign In Button for unauthenticated users */}
         {shouldShowSignIn && (
           <div className="flex flex-col items-center justify-center px-3 py-2 min-w-0">
-            <SignInButton 
-              variant="ghost" 
+            <SignInButton
+              variant="ghost"
               size="sm"
               className="h-auto p-0 text-xs font-medium text-muted-foreground hover:text-foreground"
               returnTo={pathname}
@@ -153,6 +153,12 @@ export function MobileNav() {
                   Settings
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/dashboard">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Dashbaord
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => signOut()}>
                 <LogOut className="mr-2 h-4 w-4" />
@@ -169,7 +175,7 @@ export function MobileNav() {
 // Floating Action Button for creating new spots
 export function CreateSpotFAB() {
   const pathname = usePathname();
-  
+
   // Show FAB only on map and spots pages
   const showFAB = pathname === "/map" || pathname === "/spots" || pathname.startsWith("/spots");
 

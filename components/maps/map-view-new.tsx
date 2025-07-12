@@ -99,7 +99,7 @@ export function MapView({
           onClick={handleMapClick}
           onDblclick={handleMapDoubleClick}
           gestureHandling="greedy"
-          disableDefaultUI={false}
+          disableDefaultUI={true}
         // styles={[
         //   {
         //     featureType: "poi",
