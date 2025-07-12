@@ -103,4 +103,19 @@ export class SpotService {
     const response = await fetch(`/api/spots?${params.toString()}`);
     return this.handleResponse(response);
   }
+
+  static async requestPublic(spotId: string): Promise<{ success: boolean; message: string }> {
+    const response = await fetch("/api/moderation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        contentType: "spot",
+        contentId: spotId,
+      }),
+    });
+
+    return this.handleResponse<{ success: boolean; message: string }>(response);
+  }
 }

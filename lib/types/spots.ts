@@ -101,7 +101,7 @@ export interface PaginatedResponse<T> {
 export const SPOT_TYPES = ["downhill", "freeride", "freestyle", "cruising", "dancing", "pumping"] as const;
 export const SPOT_DIFFICULTIES = ["beginner", "intermediate", "advanced", "expert"] as const;
 export const SPOT_VISIBILITIES = ["public", "private", "friends"] as const;
-export const SPOT_STATUSES = ["pending", "approved", "rejected"] as const;
+export const SPOT_STATUSES = ["draft", "pending", "approved", "rejected"] as const;
 export const USER_ROLES = ["user", "moderator", "admin"] as const;
 
 
