@@ -1,4 +1,5 @@
 import { MobileNav, CreateSpotFAB } from "@/components/navigation/mobile-nav";
+import { LocationHomingFAB } from "@/components/navigation/location-homing-fab";
 
 export default function AppLayout({
   children,
@@ -7,11 +8,12 @@ export default function AppLayout({
 }) {
   return (
     <div className="min-h-screen bg-background">
-      <main className="pb-16 lg:pb-0">
+      <main className="">
         {children}
       </main>
       <MobileNav />
-      <CreateSpotFAB />
+      {/* <CreateSpotFAB /> */}
+      <LocationHomingFAB />
     </div>
   );
 }

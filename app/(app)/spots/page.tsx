@@ -16,10 +16,14 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Search, MapIcon } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { SpotService } from "@/lib/services/spotService";
+import { toast } from "sonner";
 
 export default function SpotsPage() {
   const router = useRouter();
-  
+  const { user } = useAuth();
+
   // State for filters
   const [searchQuery, setSearchQuery] = useState("");
   const [spotType, setSpotType] = useState<string>("all");
@@ -27,7 +31,7 @@ export default function SpotsPage() {
   const [sortBy, setSortBy] = useState<string>("newest");
 
   // Single hook call replaces all the fetch logic!
-  const { data, isLoading, error } = useSpots({
+  const { data, isLoading, error, refetch } = useSpots({
     search: searchQuery || undefined,
     type: spotType !== "all" ? spotType : undefined,
     difficulty: difficulty !== "all" ? difficulty : undefined,
@@ -36,6 +40,17 @@ export default function SpotsPage() {
   });
 
   const spots = data?.spots || [];
+
+  const handleRequestPublic = async (spotId: string) => {
+    try {
+      await SpotService.requestPublic(spotId);
+      toast.success("Spot submitted for public approval!");
+      // Refetch to update the spot status
+      refetch();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to submit for approval");
+    }
+  };
 
   if (error) {
     return <div>Error: {error.message}</div>;
@@ -48,15 +63,15 @@ export default function SpotsPage() {
         <div className="max-w-6xl mx-auto p-4">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-semibold">Longboarding Spots</h1>
-            
-            <div className="flex items-center space-x-2">
+
+            {/* <div className="flex items-center space-x-2">
               <Link href="/map">
                 <Button variant="outline" size="sm">
                   <MapIcon className="h-4 w-4 mr-2" />
                   Map View
                 </Button>
               </Link>
-            </div>
+            </div> */}
           </div>
 
           {/* Search and Filters */}
@@ -71,7 +86,7 @@ export default function SpotsPage() {
               />
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            {/* <div className="flex flex-wrap gap-2">
               <Select value={spotType} onValueChange={setSpotType}>
                 <SelectTrigger className="w-40">
                   <SelectValue placeholder="All Types" />
@@ -87,18 +102,7 @@ export default function SpotsPage() {
                 </SelectContent>
               </Select>
 
-              <Select value={difficulty} onValueChange={setDifficulty}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="All Levels" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value="beginner">🟢 Beginner</SelectItem>
-                  <SelectItem value="intermediate">🟡 Intermediate</SelectItem>
-                  <SelectItem value="advanced">🟠 Advanced</SelectItem>
-                  <SelectItem value="expert">🔴 Expert</SelectItem>
-                </SelectContent>
-              </Select>
+
 
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-40">
@@ -110,7 +114,7 @@ export default function SpotsPage() {
                   <SelectItem value="name">Name A-Z</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -141,6 +145,13 @@ export default function SpotsPage() {
                     onViewDetails={() => {
                       router.push(`/spots/${spot.id}`);
                     }}
+                    onEditSpot={user?.id === spot.user.id ? () => {
+                      router.push(`/spots/${spot.id}/edit`);
+                    } : undefined}
+                    onRequestPublic={user?.id === spot.user.id ? () => {
+                      handleRequestPublic(spot.id);
+                    } : undefined}
+                    isOwner={user?.id === spot.user.id}
                   />
                 ))}
               </div>

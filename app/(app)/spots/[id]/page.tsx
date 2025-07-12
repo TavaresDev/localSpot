@@ -15,10 +15,13 @@ import {
   Calendar,
   MapPin,
   User,
-  Loader2
+  Loader2,
+  Globe
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { SpotService } from "@/lib/services/spotService";
+import { useState } from "react";
 
 // Use the proper type from types file
 
@@ -28,7 +31,10 @@ export default function SpotDetailsPage() {
   const { user } = useAuth();
   
   const spotId = params.id as string;
-  const { data: spot, isLoading, error } = useSpot(spotId);
+  const { data: spot, isLoading, error, refetch } = useSpot(spotId);
+  
+  // State for "Make Public" button
+  const [isRequestingPublic, setIsRequestingPublic] = useState(false);
 
   const handleEditSpot = () => {
     if (!spot) return;
@@ -60,6 +66,22 @@ export default function SpotDetailsPage() {
     
     const url = `https://www.google.com/maps/dir/?api=1&destination=${spot.locationLat},${spot.locationLng}`;
     window.open(url, '_blank');
+  };
+
+  const handleRequestPublic = async () => {
+    if (!spot) return;
+    
+    setIsRequestingPublic(true);
+    try {
+      await SpotService.requestPublic(spot.id);
+      toast.success("Spot submitted for public approval!");
+      // Refetch to potentially update status
+      refetch();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to submit for approval");
+    } finally {
+      setIsRequestingPublic(false);
+    }
   };
 
   if (isLoading) {
@@ -206,6 +228,23 @@ export default function SpotDetailsPage() {
                     View on Map
                   </Link>
                 </Button>
+
+                {/* Make Public button for spot owners */}
+                {isOwner && (spot.status === "draft" || spot.status === "rejected") && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full text-blue-600 hover:text-blue-700 border-blue-200 hover:border-blue-300" 
+                    onClick={handleRequestPublic}
+                    disabled={isRequestingPublic}
+                  >
+                    {isRequestingPublic ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Globe className="h-4 w-4 mr-2" />
+                    )}
+                    {isRequestingPublic ? "Submitting..." : "Make Public"}
+                  </Button>
+                )}
               </CardContent>
             </Card>
 
@@ -219,10 +258,39 @@ export default function SpotDetailsPage() {
                   <span className="text-muted-foreground">Total Events</span>
                   <span className="font-medium">0</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Status</span>
-                  <span className="font-medium capitalize">{spot.status}</span>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${
+                      spot.status === "approved" ? "bg-green-500" :
+                      spot.status === "pending" ? "bg-yellow-500" :
+                      spot.status === "rejected" ? "bg-red-500" :
+                      spot.status === "draft" ? "bg-gray-400" :
+                      "bg-gray-500"
+                    }`} />
+                    <span className="font-medium capitalize">{spot.status}</span>
+                  </div>
                 </div>
+                {spot.status === "pending" && (
+                  <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded">
+                    📋 This spot is under review for public visibility
+                  </div>
+                )}
+                {spot.status === "rejected" && (
+                  <div className="text-xs text-muted-foreground bg-red-50 dark:bg-red-900/20 p-2 rounded">
+                    ❌ This spot was not approved for public visibility
+                  </div>
+                )}
+                {spot.status === "draft" && isOwner && (
+                  <div className="text-xs text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
+                    💡 This is a private draft. Use &quot;Make Public&quot; to submit for community review
+                  </div>
+                )}
+                {spot.status === "rejected" && isOwner && (
+                  <div className="text-xs text-muted-foreground bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
+                    💡 Use &quot;Make Public&quot; to resubmit this spot for review
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Visibility</span>
                   <span className="font-medium capitalize">{spot.visibility}</span>

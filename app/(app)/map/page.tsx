@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { MapIcon, List, Calendar } from "lucide-react";
+import { useUserLocation } from "@/lib/hooks/useUserLocation";
 
 export default function MapPage() {
   const router = useRouter();
@@ -17,45 +18,15 @@ export default function MapPage() {
   const [events, setEvents] = useState<EventWithSpot[]>([]);
   const [selectedSpot, setSelectedSpot] = useState<SpotWithUser | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<EventWithSpot | null>(null);
-  const [spotsLoading, setSpotsLoading] = useState(true);
-  const [eventsLoading, setEventsLoading] = useState(true);
-  const [spotsError, setSpotsError] = useState<string | null>(null);
-  const [eventsError, setEventsError] = useState<string | null>(null);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [showEvents, setShowEvents] = useState<boolean>(true);
+  const { location: userLocation } = useUserLocation();
 
-  // Get user location (non-blocking)
-  useEffect(() => {
-    const getUserLocation = () => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            setUserLocation({
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
-            });
-          },
-          (error) => {
-            console.error("Error getting location:", error);
-            // Default to San Francisco
-            setUserLocation({ lat: 37.7749, lng: -122.4194 });
-          }
-        );
-      } else {
-        setUserLocation({ lat: 37.7749, lng: -122.4194 });
-      }
-    };
-
-    getUserLocation();
-  }, []);
 
   // Fetch spots immediately (parallel to other loading)
   useEffect(() => {
     async function fetchSpots() {
       try {
-        setSpotsLoading(true);
-        setSpotsError(null);
 
         const params = new URLSearchParams();
         // Future: add location-based filtering when userLocation is available
@@ -73,9 +44,6 @@ export default function MapPage() {
         setSpots(data.spots || []);
       } catch (error) {
         console.error("Error fetching spots:", error);
-        setSpotsError("Failed to load spots");
-      } finally {
-        setSpotsLoading(false);
       }
     }
 
@@ -86,8 +54,6 @@ export default function MapPage() {
   useEffect(() => {
     async function fetchEvents() {
       try {
-        setEventsLoading(true);
-        setEventsError(null);
 
         const params = new URLSearchParams();
         params.append("upcoming", "true"); // Only show upcoming events on map
@@ -100,9 +66,6 @@ export default function MapPage() {
         setEvents(data.events || []);
       } catch (error) {
         console.error("Error fetching events:", error);
-        setEventsError("Failed to load events");
-      } finally {
-        setEventsLoading(false);
       }
     }
 
@@ -128,9 +91,9 @@ export default function MapPage() {
   // const mapCenter =
 
   return (
-    <div className="h-screen md:h-[100dvh] flex flex-col">
+    <div className="h-screen md:h-[90dvh] flex flex-col">
       {/* Header */}
-      <div className="bg-background border-b p-4 flex items-center justify-between">
+      {/* <div className="bg-background border-b p-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold">SpotMap</h1>
 
         <div className="flex items-center space-x-2">
@@ -164,7 +127,7 @@ export default function MapPage() {
             Events
           </Button>
 
-          {/* Mobile Sheet for spots list */}
+          Mobile Sheet for spots list
           <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm" className="sm:hidden">
@@ -193,7 +156,7 @@ export default function MapPage() {
             </SheetContent>
           </Sheet>
         </div>
-      </div>
+      </div> */}
 
       <div className="flex-1 flex">
         {/* Map View */}
@@ -216,7 +179,7 @@ export default function MapPage() {
 
             {/* Selected Spot Card Overlay */}
             {selectedSpot && (
-              <div className="absolute bottom-4 left-4 right-4 z-10 sm:left-4 sm:right-auto sm:max-w-sm">
+              <div className="absolute bottom-18 left-2 right-2 z-10 sm:left-4 sm:right-auto sm:max-w-sm">
                 <SpotCard
                   spot={selectedSpot}
                   onViewDetails={() => {
