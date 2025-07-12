@@ -1,0 +1,14 @@
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="danceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EC4899;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DB2777;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="#fce7f3"/>
+  <circle cx="200" cy="150" r="100" fill="url(#danceGrad)" opacity="0.3"/>
+  <!-- <path d="M150,100 Q200,80 250,100 Q200,120 150,100" fill="#EC4899" opacity="0.6"/> -->
+  <path d="M120,180 Q200,150 280,180 Q200,210 120,180" fill="#EC4899" opacity="0.6"/>
+
+  <text x="200" y="280" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#BE185D"> DANCING</text>
+</svg>

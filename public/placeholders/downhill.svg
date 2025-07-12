@@ -1,0 +1,12 @@
+<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mountainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#EF4444;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B91C1C;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="#f3f4f6"/>
+  <polygon points="0,200 100,80 200,120 300,60 400,140 400,300 0,300" fill="url(#mountainGrad)"/>
+  <polygon points="50,250 150,160 250,180 350,120 400,160 400,300 50,300" fill="#DC2626" opacity="0.8"/>
+  <text x="200" y="260" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="white"> DOWNHILL</text>
+</svg>
