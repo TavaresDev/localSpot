@@ -5,8 +5,8 @@
       <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
     </linearGradient>
   </defs>
-  <rect width="400" height="300" fill="#d1fae5"/>
-  <ellipse cx="200" cy="200" rx="150" ry="80" fill="url(#cruiseGrad)"/>
+  <rect width="400" height="400" fill="#d1fae5"/>
+  <ellipse cx="200" cy="140" rx="150" ry="80" fill="url(#cruiseGrad)"/>
   <circle cx="120" cy="80" r="25" fill="#34D399" opacity="0.7"/>
   <circle cx="280" cy="100" r="20" fill="#34D399" opacity="0.7"/>
   <circle cx="320" cy="180" r="15" fill="#34D399" opacity="0.7"/>
