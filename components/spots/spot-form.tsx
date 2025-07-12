@@ -20,7 +20,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, MapPin } from "lucide-react";
+import { Loader2, MapPin, Camera, Star, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { Spot, SPOT_TYPES, SPOT_DIFFICULTIES, SPOT_VISIBILITIES } from "@/lib/types/spots";
 import { useSpotForm, UseSpotFormOptions } from "@/lib/hooks/useSpotForm";
 import { CreateSpotResponse } from "@/lib/services/spotService";
@@ -184,6 +185,73 @@ export function SpotForm({
                 />
               )}
             </div>
+
+            {/* Photos Management */}
+            {form.watch("photos") && form.watch("photos").length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Camera className="h-5 w-5" />
+                    <h3 className="text-lg font-semibold">Photos</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Click to set as primary • {form.watch("photos").length} photo{form.watch("photos").length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {form.watch("photos").map((photoUrl, index) => (
+                    <div 
+                      key={index} 
+                      className={`group relative aspect-square rounded-lg overflow-hidden border-2 cursor-pointer transition-all hover:shadow-md ${
+                        index === 0 
+                          ? 'border-blue-500 ring-2 ring-blue-200' 
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => {
+                        // Move clicked photo to first position
+                        const photos = form.getValues("photos");
+                        const newPhotos = [photoUrl, ...photos.filter((_, i) => i !== index)];
+                        form.setValue("photos", newPhotos);
+                      }}
+                    >
+                      <Image
+                        src={photoUrl}
+                        alt={`Spot photo ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        onError={(e) => {
+                          // Fallback to placeholder if image fails to load
+                          e.currentTarget.src = "/placeholders/default-spot.svg";
+                        }}
+                      />
+                      {/* Primary photo indicator */}
+                      {index === 0 && (
+                        <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
+                          <Star className="h-3 w-3 fill-current" />
+                          Primary
+                        </div>
+                      )}
+                      {/* Remove button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const photos = form.getValues("photos");
+                          const newPhotos = photos.filter((_, i) => i !== index);
+                          form.setValue("photos", newPhotos);
+                        }}
+                        className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  💡 The first photo will be used as the main spot image in listings and cards.
+                </p>
+              </div>
+            )}
 
             {/* Location */}
             <div className="space-y-4">

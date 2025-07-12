@@ -21,7 +21,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, MapPin, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, MapPin, CheckCircle, AlertCircle, Camera, Star, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { Spot, SPOT_TYPES, SPOT_DIFFICULTIES, SPOT_VISIBILITIES } from "@/lib/types/spots";
 import { useSpotForm, UseSpotFormOptions } from "@/lib/hooks/useSpotForm";
 import { CreateSpotResponse } from "@/lib/services/spotService";
@@ -207,6 +208,98 @@ export function DesktopSpotForm({
                   />
                 </div>
               </div>
+
+              {/* Photos Management Section */}
+              {form.watch("photos") && form.watch("photos").length > 0 && (
+                <div className="space-y-6">
+                  <div className="border-b pb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Camera className="h-5 w-5" />
+                        <h3 className="text-lg font-semibold">Photos</h3>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">
+                          Click to set as primary • {form.watch("photos").length} photo{form.watch("photos").length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Manage spot images and set the primary photo for listings
+                    </p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {form.watch("photos").map((photoUrl, index) => (
+                      <div 
+                        key={index} 
+                        className={`group relative aspect-square rounded-lg overflow-hidden border-2 cursor-pointer transition-all hover:shadow-lg ${
+                          index === 0 
+                            ? 'border-blue-500 ring-2 ring-blue-200 shadow-md' 
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => {
+                          // Move clicked photo to first position
+                          const photos = form.getValues("photos");
+                          const newPhotos = [photoUrl, ...photos.filter((_, i) => i !== index)];
+                          form.setValue("photos", newPhotos);
+                        }}
+                      >
+                        <Image
+                          src={photoUrl}
+                          alt={`Spot photo ${index + 1}`}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                          onError={(e) => {
+                            // Fallback to placeholder if image fails to load
+                            e.currentTarget.src = "/placeholders/default-spot.svg";
+                          }}
+                        />
+                        {/* Primary photo indicator */}
+                        {index === 0 && (
+                          <div className="absolute top-3 left-3 bg-blue-500 text-white px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 shadow-lg">
+                            <Star className="h-4 w-4 fill-current" />
+                            Primary
+                          </div>
+                        )}
+                        {/* Remove button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const photos = form.getValues("photos");
+                            const newPhotos = photos.filter((_, i) => i !== index);
+                            form.setValue("photos", newPhotos);
+                          }}
+                          className="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg"
+                          title="Remove photo"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                        {/* Click hint overlay */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center">
+                          {index !== 0 && (
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/90 text-gray-800 px-3 py-1 rounded-md text-sm font-medium">
+                              Set as primary
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <p className="text-sm text-blue-800 dark:text-blue-200 flex items-start gap-2">
+                      <span className="text-lg">💡</span>
+                      <span>
+                        <strong>Primary Photo:</strong> The first photo will be used as the main spot image in listings, cards, and search results. 
+                        Click any photo to make it primary, or use the remove button to delete unwanted images.
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Location Section */}
               <div className="space-y-6">
