@@ -32,6 +32,7 @@ const createSpotFormSchema = z.object({
   bestTimes: z.string().max(500).optional(),
   safetyNotes: z.string().max(1000).optional(),
   rules: z.string().max(1000).optional(),
+  photos: z.array(z.string()),
 });
 
 const updateSpotFormSchema = createSpotFormSchema.partial();
@@ -137,6 +138,7 @@ export function useSpotForm(options: UseSpotFormOptions = {}): UseSpotFormReturn
       bestTimes: initialData?.bestTimes || "",
       safetyNotes: initialData?.safetyNotes || "",
       rules: initialData?.rules || "",
+      photos: Array.isArray(initialData?.photos) ? initialData.photos : [],
     },
   });
 
@@ -245,6 +247,7 @@ export function useSpotForm(options: UseSpotFormOptions = {}): UseSpotFormReturn
           bestTimes: data.bestTimes?.trim() || undefined,
           safetyNotes: data.safetyNotes?.trim() || undefined,
           rules: data.rules?.trim() || undefined,
+          photos: data.photos || [],
         };
 
         // Remove undefined values
